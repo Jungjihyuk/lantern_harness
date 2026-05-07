@@ -1,16 +1,16 @@
 
-[[My Harness System]]에서 5장(5-Hook 시스템)이 참조하는 외부 레퍼런스. Claude Code가 hook 시스템에서 **무엇을 기대하는지**, harness가 그 안에서 **무엇을 어떻게 골랐는지**의 detail.
+[My Harness System](My Harness System.md)에서 5장(5-Hook 시스템)이 참조하는 외부 레퍼런스. Claude Code가 hook 시스템에서 **무엇을 기대하는지**, harness가 그 안에서 **무엇을 어떻게 골랐는지**의 detail.
 
 > 공식 문서: [claude hook](https://code.claude.com/docs/ko/hooks)
 
 ## 목차
 
-1. [[#1. Hook 이벤트 종류]]
-2. [[#2. Envelope — stdin·stdout 규약]]
-3. [[#3. Exit Code 프로토콜]]
-4. [[#4. JSON 출력 — 풍부한 제어]]
-5. [[#5. 왜 exit 2를 메인으로 골랐나]]
-6. [[#6. 요약 매핑]]
+1. [#1. Hook 이벤트 종류](#1-hook-이벤트-종류)
+2. [#2. Envelope — stdin·stdout 규약](#2-envelope--stdinstdout-규약)
+3. [#3. Exit Code 프로토콜](#3-exit-code-프로토콜)
+4. [#4. JSON 출력 — 풍부한 제어](#4-json-출력--풍부한-제어)
+5. [#5. 왜 exit 2를 메인으로 골랐나](#5-왜-exit-2를-메인으로-골랐나)
+6. [#6. 요약 매핑](#6-요약-매핑)
 
 ---
 

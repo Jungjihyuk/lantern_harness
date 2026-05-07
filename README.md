@@ -17,8 +17,6 @@
 
 </div>
 
----
-
 
 <div align="center">
 
@@ -54,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/Jungjihyuk/lantern_harness/main/ins
 **Lantern Harness**는 LLM 에이전트(Claude Code · Codex 등)와 함께 일하는 *메타-구조*입니다. <br>
 - 설계의 두 축은 **`standard`** 와 **`know-how`** <br>
 — **standard** 에는 다른 사람들이 검증해낸 하네스가 모이고, **know-how** 에서는 자신만의 workflow를 자연스럽게 이어 붙입니다. <br>
-- 두 축이 자유롭게 결합되어 하네스 구조를 $\color{#D97706}{\textbf{추가}}$·$\color{#D97706}{\textbf{수정}}$·$\color{#D97706}{\textbf{삭제}}$하기 쉬운 시스템 <br>
+- 두 축이 자유롭게 결합되어 하네스 구조를 $\color{#D97706}{\textbf{추가}}$ · $\color{#D97706}{\textbf{수정}}$ · $\color{#D97706}{\textbf{삭제}}$ 하기 쉬운 시스템 <br>
 — 검증된 노하우 위에 자기 결을 얹어 빚어갈 수 있습니다.
 
 ### 왜 만들었나
@@ -202,14 +200,14 @@ harness version           # 버전·plugin·linked provider 표시
 
 ---
 
-## 🪔 자매 프로젝트 — `lantern-docs`
+## 🪔 이웃 프로젝트 — `lantern-docs`
 
-Lantern Harness가 **LLM 에이전트의 행동**을 통제한다면, [`lantern-docs`](#)는 그 위에서 **프로젝트 문서 작성 컨벤션**을 다룹니다 — 기획→설계→구현→배포→운영의 5 단계 흐름과 desktop/mobile/web 3-type 별 템플릿이 마련된 Obsidian 기반 문서 프레임워크.
+Lantern Harness가 **LLM 에이전트의 행동**을 통제한다면, [`lantern-docs`](https://github.com/Jungjihyuk/lantern_docs/tree/main)는 그 위에서 **프로젝트 문서 작성 컨벤션**을 다룹니다 — 기획→설계→구현→배포→운영의 5 단계 흐름과 desktop/mobile/web 3-type 별 템플릿이 마련된 Obsidian 기반 문서 프레임워크.
 
 | 시스템 | 다루는 영역 | 대상 |
 |---|---|---|
 | **Lantern Harness** *(이 repo)* | LLM 에이전트의 *행동* 통제 | LLM (AI) |
-| **Lantern Docs** *(자매 repo)* | 프로젝트 *문서 작성* 컨벤션·템플릿 | 사람 (팀) |
+| **Lantern Docs** *(이웃 repo)* | 프로젝트 *문서 작성* 컨벤션·템플릿 | 사람 (팀) |
 
 ---
 
@@ -244,7 +242,7 @@ Lantern Harness가 **LLM 에이전트의 행동**을 통제한다면, [`lantern-
 <a href="https://github.com/Jungjihyuk">
 <img src="https://avatars.githubusercontent.com/u/33630505?v=4" width="100px;" alt=""/><br />
 <sub><b>정지혁</b></sub></a><br />
-<a href="https://github.com" title="Code">🛠️</a>
+<a href="https://github.com/Jungjihyuk/lantern_harness/commits/main/?author=Jungjihyuk" title="Code">🛠️</a>
 
 
 🪔 *Made with a small flame.*
