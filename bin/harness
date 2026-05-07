@@ -1,0 +1,64 @@
+#!/bin/bash
+# harness CLI 엔트리. git-style: harness <verb> [args]
+
+set -euo pipefail
+
+VERSION="0.0.1"
+HARNESS_HOME="$HOME/.harness"
+CMD_DIR="$HARNESS_HOME/bin/cmd"
+
+usage() {
+  cat <<USAGE
+harness $VERSION — generalized harness engineering CLI
+
+Usage:
+  harness <command> [args]
+
+Commands (MVP):
+  init                   현재 디렉토리에 .harness/ 초기 설정
+  link <provider>         provider hook 시스템에 등록 (claude/codex/omo)
+  unlink <provider>       등록 해제
+  list                   가용/설치 plugin 목록
+  install <name>         글로벌 → 프로젝트 symlink + compose.yaml 갱신
+  remove <name>          symlink 삭제 + compose.yaml 갱신
+  publish <path>         know-how → 글로벌 standard로 promote
+  fork <name>            symlink → 로컬 복사 (프로젝트 전용 변형)
+  scaffold <name>...     standard 템플릿(README/SECURITY/DESIGN 등)을 프로젝트에 복사
+  viz <type>             시각화 (workflow/subagents/bottleneck/dashboard)
+  eval <list|run|report> 하네스 동작 평가 (회귀 테스트)
+  improve                사용 패턴 분석 + compose.yaml 조정 제안 (자동 적용 X)
+  judge <run|status>     LLM-as-judge 정성 평가 (compose.yaml로 활성화 + API key)
+  ralph <start|status|list|stop>  무인 루프 러너
+  reload                 resolved.md 재생성
+  doctor                 설정·의존성·등록 진단
+  version                버전 정보
+
+Run 'harness <command> --help' for command-specific help.
+USAGE
+}
+
+if [[ $# -eq 0 ]]; then
+  usage
+  exit 0
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+  -h|--help|help) usage; exit 0 ;;
+  init|link|unlink|list|install|remove|publish|fork|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+    script="$CMD_DIR/$cmd.sh"
+    if [[ -x "$script" ]]; then
+      exec "$script" "$@"
+    else
+      echo "Error: $cmd 미구현" >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Error: unknown command '$cmd'" >&2
+    usage
+    exit 1
+    ;;
+esac
