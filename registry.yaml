@@ -1,0 +1,32 @@
+# Plugin 카탈로그 (UI 검색용)
+# `harness list`가 이걸 읽어 가용 plugin 보여줌
+
+standard_mds:
+  - name: AGENTS.md
+    path: standard/AGENTS.md
+    description: 4 블록 라우팅 인덱스 + Hard Rules. prefix 주입.
+    qualifies_for_prefix: true
+
+plugins:
+  - name: hooks
+    path: standard/hooks
+    type: leaf
+    description: 표준 hook 묶음 — Claude 이벤트와 1:1 매핑 (session_start / user_prompt_submit / pre_tool_use / post_tool_use / stop / post_commit)
+
+  - name: ralph
+    path: standard/ralph
+    type: leaf
+    description: 무인 루프 러너 (단일/chain 모드)
+
+adapters:
+  - name: claude
+    path: standard/adapters/claude
+    status: ready
+
+  - name: codex
+    path: standard/adapters/codex
+    status: placeholder
+
+  - name: omo
+    path: standard/adapters/omo
+    status: placeholder

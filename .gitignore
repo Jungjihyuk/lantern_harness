@@ -1,0 +1,67 @@
+# ============================================================
+# .gitignore 분류: 누가/무엇이 생성하는가
+# ============================================================
+# 1. Environment   — OS, IDE, Editor가 생성
+# 2. Python        — lib/ 분석 모듈이 생성
+# 3. Harness       — runtime / know-how 등 사용자별 상태
+# 4. AI / Agent    — Claude 등이 생성
+# ============================================================
+
+
+# ========================= 1. Environment ==========================
+
+## OS - macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+## IDE / Editor
+.vscode/
+.cursor/
+.idea/
+*.swp
+*.swo
+*~
+
+## Logs
+*.log
+
+
+# =========================== 2. Python =============================
+
+## Bytecode / Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+## Tooling cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+
+# =========================== 3. Harness ============================
+
+## 백업 파일 (sed in-place 등이 자동 생성)
+*.bak
+*.bak.*
+
+## 사용자별 글로벌 know-how — 구조만 commit, 콘텐츠는 ignore
+know-how/*
+!know-how/.gitkeep
+
+## 프로젝트 단위 runtime (이 repo에 들어올 일 없지만 안전망)
+runtime/
+
+
+# ====================== 4. AI / Agent Tools =========================
+
+## Claude
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+.claude/settings.local.json
+.claude/**/*.bak.*
