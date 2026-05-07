@@ -1,0 +1,29 @@
+id: required-allow-after-read
+description: Required Context Read 후 Edit 통과 (allow)
+type: hook_unit
+hook: pre_tool_use
+setup:
+  init_harness: true
+  active_yaml_overrides:
+    required_context:
+      paths:
+        - { path: README.md, label: "프로젝트 정의" }
+  files:
+    - { path: README.md, content: "test\n" }
+  pre_calls:
+    - hook: session_start
+      input: { hook_type: session_start }
+    - hook: post_tool_use
+      input:
+        hook_type: post_tool_use
+        tool_name: Read
+        tool_args: { file_path: README.md }
+input:
+  hook_type: pre_tool_use
+  tool_name: Edit
+  tool_args:
+    file_path: foo.py
+    old_string: a
+    new_string: b
+expect:
+  exit_code: 0

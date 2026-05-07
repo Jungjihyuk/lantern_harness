@@ -1,0 +1,12 @@
+name: ralph
+type: leaf
+version: 0.0.1
+description: 무인 루프 러너 (단일 task 또는 stage chain)
+
+provides:
+  - runner       # 메인 loop
+  - stuck_detect
+  - verify       # default verify (override 가능)
+
+requires:
+  - hooks        # PreToolUse가 cognitive guard와 협업
