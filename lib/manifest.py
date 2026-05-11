@@ -159,13 +159,18 @@ def validate_manifest(
     if not m.roles:
         errors.append(f"{where}roles 가 비어있음 — 최소 1개 필요")
 
-    # roles enum (allowed_roles 제공 시)
-    if allowed_roles is not None and m.domain in DOMAINS:
-        domain_roles = allowed_roles.get(m.domain, frozenset())
+    # roles enum (allowed_roles 제공 시) — cross-domain union 으로 검증.
+    # manifest 의 roles 는 여러 도메인에 걸칠 수 있음 (§5.3 schema 참고).
+    # 어느 도메인이든 roles.yaml 에 등록되어 있으면 valid.
+    # 도메인-별 정확 매핑은 compose entry 단계에서 validator 가 추가 검증.
+    if allowed_roles is not None:
+        all_registered: set[str] = set()
+        for role_set in allowed_roles.values():
+            all_registered |= role_set
         for r in m.roles:
-            if r not in domain_roles:
+            if r not in all_registered:
                 errors.append(
-                    f"{where}role '{r}' 가 domain '{m.domain}' 의 roles.yaml 에 미등록"
+                    f"{where}role '{r}' 가 roles.yaml 의 어느 도메인에도 미등록"
                 )
 
     return errors
