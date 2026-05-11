@@ -4,7 +4,8 @@
 
 - **Phase 1**: read-only 통합 뷰 — `harness list`, `harness show`
 - **Phase 2**: 활성/비활성 토글 — `harness disable`, `harness enable`
-- **Phase 3 (예정)**: `harness remove`, Codex driver
+- **Phase 3**: Codex driver 추가 — 두 번째 provider 로 인터페이스 일반성 검증
+- **Phase 4 (예정)**: `harness remove`
 
 > 관련 conversation: 5축 책임축(cognition/state/action/guard/observe) × 7 메커니즘 폴더 × standard/know-how 소유축 설계 논의 결과의 첫 실체화. 본 문서는 그 중 **action 도메인의 adapters 메커니즘** 부분에 해당.
 
@@ -30,7 +31,8 @@
 - Claude Code MCPs → `~/.claude/mcp.json`
 - Claude Code skills → `~/.claude/skills/<name>/SKILL.md`
 - Claude Code plugins → `~/.claude/plugins/installed_plugins.json` + `~/.claude/settings.json`
-- (예정) Codex의 동등 파일들 → 별도 위치/포맷
+- Codex MCPs / plugins → `~/.codex/config.toml` (한 파일에 통합, TOML 포맷)
+- Codex skills → `~/.codex/skills/<name>/SKILL.md` (Claude 와 동일 형식)
 
 사용자는 provider마다 다른 명령·다른 위치를 외워야 했다. **무엇이 어디 깔려 있는지, 어느 게 켜져 있는지, 끄려면 어디를 만져야 하는지 한눈에 보는 수단이 없음.**
 
@@ -71,9 +73,10 @@ adapters/
 ├── disable.py     # `harness disable` 진입점 (실 로직은 _mutation.py)
 ├── enable.py      # `harness enable` 진입점
 ├── _mutation.py   # disable/enable 공통 CLI 로직 (matching, dry-run, idempotent)
-└── claude/
-    └── driver.py  # Claude Code 전용 driver
-└── codex/         # (예정) Codex driver
+├── claude/
+│   └── driver.py  # Claude Code 전용 driver
+└── codex/
+    └── driver.py  # Codex 전용 driver (자체 minimal TOML 파서 포함)
 ```
 
 driver 추가 = `adapters/<provider>/driver.py` 한 파일만 작성. registry가 자동 발견.
@@ -134,8 +137,11 @@ ${XDG_DATA_HOME:-~/.local/share}/harness/   # 사용자 데이터, install이 �
   │
   ├──────────────┐
   ▼              ▼
-[claude/driver]  [codex/driver]   ← provider별 구현체 (Phase 2: claude만)
+[claude/driver]  [codex/driver]   ← provider별 구현체 (Phase 3 이후: 둘 다 활성)
   │              │
+  │              └─read→ ~/.codex/config.toml + ~/.codex/skills/
+  │              └─write→ ~/.codex/config.toml (line surgery)
+  │                       ${XDG_DATA_HOME}/harness/state/codex/   (MCP 백업)
   ├──read──→    ~/.claude/...      (mcp.json, skills/, plugins/, settings.json)
   └──write→     ~/.claude/...      (disable/enable 시)
                 ${XDG_DATA_HOME}/harness/state/claude/   (MCP 백업)
@@ -267,7 +273,58 @@ MCP_BACKUP = HARNESS_STATE_DIR / "mcp_backup.json"
 
 XDG 표준 준수. `install.sh`가 `~/.harness/`를 갈아엎어도 영향 없음.
 
-### 4.4 `standard/adapters/list.py`
+### 4.4 `standard/adapters/codex/driver.py`
+
+Codex CLI 전용 driver. `CodexDriver(ProviderDriver)`.
+
+#### 데이터 소스
+
+| 작업 | 위치 |
+|---|---|
+| MCP 읽기 | `~/.codex/config.toml` 의 `[mcp_servers.<name>]` 섹션 |
+| MCP 쓰기 (disable) | `config.toml` 에서 섹션 제거 + `${XDG_DATA_HOME}/harness/state/codex/mcp_backup.json` 백업 |
+| Skill 읽기 | `~/.codex/skills/<dir>/SKILL.md` 또는 `SKILL.md.disabled` (Claude 와 동일 형식) |
+| Skill 쓰기 (disable) | `SKILL.md` ↔ `SKILL.md.disabled` rename |
+| Plugin 읽기 | `~/.codex/config.toml` 의 `[plugins."<id>"]` 섹션 + `enabled` 키 |
+| Plugin 쓰기 (disable) | `config.toml` 의 해당 섹션에서 `enabled = true/false` 토글 |
+
+Claude 와 비교: Codex 는 **MCP·plugin 모두 단일 파일(`config.toml`)** 에 통합. Claude 는 4개 파일에 분산.
+
+#### 자체 minimal TOML 파서
+
+`tomli`/`tomllib` 같은 외부 의존 없이 Python 표준 라이브러리(`re`)만 사용한 자체 파서.
+PyYAML 회피하고 `_parse_frontmatter` 자체 작성한 것과 동일 원칙 (standalone 운영).
+
+**지원 패턴**:
+- 섹션 헤더 `[a.b]` / `[plugins."name@source"]`
+- 단순 key-value (string / bool / int / float / 배열)
+- 주석 (`#`)
+
+**미지원** (Codex 케이스에 불필요):
+- inline table (`{ k = v }`)
+- multi-line string (`"""..."""`)
+- dotted keys (단일 라인)
+- array of tables (`[[...]]`) — 만나면 skip
+
+자체 파서가 작동하는 부분만 처리하고, 모르는 라인은 silently skip. Codex 가 향후 더 복잡한 TOML 사양 도입 시 보강 필요.
+
+#### config.toml 쓰기 — line-level surgery
+
+disable/enable 시 전체 파일 재생성하지 않고 **해당 섹션 line block 만 편집**. 다른 섹션·주석·formatting 보존.
+
+**`_find_section_block(lines, section)`**: 섹션 헤더부터 다음 섹션 직전까지 `[start, end)` 반환.
+
+**`_toggle_bool_in_block(lines, start, end, key, target)`**: 정규식 매치로 `<key> = true/false` 라인 찾아 target 값으로 교체. 없으면 False 반환 (호출자가 새로 삽입).
+
+**MCP enable 시 섹션 복원**: 백업 dict 를 `[mcp_servers.<name>]` 헤더 + `_render_toml_kv()` 가 생성한 단순 key-value 라인들로 직렬화 후 파일 끝에 append.
+
+#### 안전 헬퍼
+
+- `_read_text(path)` — 파일 없으면 빈 문자열 (예외 X)
+- `_write_text_atomic(path, text)` — tmp 작성 후 `os.replace`
+- 모든 list 메서드: 파일/디렉토리 없으면 빈 list 반환 (Codex 미설치 환경 graceful)
+
+### 4.5 `standard/adapters/list.py`
 
 argparse 기반 CLI 엔트리.
 
@@ -294,7 +351,7 @@ _LIST_COLUMNS = [
 
 `--provider` choices는 `discover_drivers()` 결과로 동적 채움 — Codex driver 추가되면 `--provider {claude,codex}`로 자동 갱신.
 
-### 4.5 `standard/adapters/show.py`
+### 4.6 `standard/adapters/show.py`
 
 `harness show <name>` 의 CLI 엔트리. list가 표라면 show는 **수직 key:value + (skill의 경우) 본문 일부**로 한 건의 깊은 뷰.
 
@@ -320,7 +377,7 @@ _LIST_COLUMNS = [
 - `1` — not found
 - `2` — disambiguation 필요
 
-### 4.6 `standard/adapters/_mutation.py`
+### 4.7 `standard/adapters/_mutation.py`
 
 disable / enable 공통 CLI 로직. `disable.py` / `enable.py` 가 본 모듈의 `run(verb)` 만 호출.
 
@@ -339,11 +396,11 @@ disable / enable 공통 CLI 로직. `disable.py` / `enable.py` 가 본 모듈의
 - `4` — `ItemNotFound` (provider 상태에서 못 찾음)
 - `5` — 기타 mutation 예외
 
-### 4.7 `standard/adapters/disable.py` / `enable.py`
+### 4.8 `standard/adapters/disable.py` / `enable.py`
 
 각각 `_mutation.run("disable")` / `_mutation.run("enable")` 만 호출하는 얇은 진입점. verb 외 동작은 동일.
 
-### 4.8 `bin/cmd/{list,show,disable,enable}.sh`
+### 4.9 `bin/cmd/{list,show,disable,enable}.sh`
 
 shell 래퍼들. 공통 패턴:
 
@@ -357,7 +414,7 @@ exec python3 "$entry" "$@"
 
 argparse 가 usage / -h / 잘못된 인자 자체 처리하므로 shell 단의 하드코딩 usage는 두지 않음.
 
-### 4.9 `bin/harness` (dispatcher)
+### 4.10 `bin/harness` (dispatcher)
 
 git-style CLI. case whitelist에 새 verb 추가 + usage 텍스트 갱신. **이 단계를 빠뜨리면 verb 호출 시 `unknown command` 에러**.
 
@@ -511,11 +568,11 @@ harness list --kind plugin --json | jq '.[] | select(.name | contains("ouroboros
 
 ### 7.1 현재 한계
 
-1. **단일 provider** — Codex driver는 미구현. 인터페이스가 second adapter로 검증되지 않음.
-2. **plugin 중복 scope 표현 부족** — 동일 plugin이 user/local 양쪽에 설치되어 있어도 첫 항목만 대표. 향후 멀티 scope 표시 고려.
-3. **remove 없음** — 하드 삭제는 미구현. 백업 정책 결정 후 진행 예정.
-4. **bundle 개념 없음** — 같은 패키지가 MCP + plugin 둘로 노출되는 경우(예: ouroboros), 사용자가 두 번 disable 해야 함. 향후 manifest 기반 bundle 도입 고려.
-5. **이미 열린 Claude Code 세션은 변경 미반영** — disable/enable 결과는 다음 세션부터 인식됨. 이건 Claude Code의 자체 동작이라 harness가 해결할 수 없음.
+1. **plugin 중복 scope 표현 부족** — 동일 plugin이 user/local 양쪽에 설치되어 있어도 첫 항목만 대표. 향후 멀티 scope 표시 고려.
+2. **remove 없음** — 하드 삭제는 미구현. 백업 정책 결정 후 진행 예정.
+3. **bundle 개념 없음** — 같은 패키지가 MCP + plugin 둘로 노출되는 경우(예: ouroboros), 사용자가 두 번 disable 해야 함. 향후 manifest 기반 bundle 도입 고려.
+4. **이미 열린 provider 세션은 변경 미반영** — disable/enable 결과는 다음 세션부터 인식됨. provider 자체 동작이라 harness가 해결할 수 없음.
+5. **Codex 자체 TOML 파서 한계** — inline table / multi-line / array of tables 미지원. 현재 Codex `config.toml` 케이스엔 충분하지만, 향후 Codex 가 고급 사양 도입 시 보강 필요.
 
 ### 7.2 다음 단계 (우선순위 후보)
 
@@ -523,7 +580,7 @@ harness list --kind plugin --json | jq '.[] | select(.name | contains("ouroboros
 |---|---|---|
 | ~~`harness show <name>` 개별 상세~~ | ~~작음~~ | ✅ Phase 1 완료 |
 | ~~`harness disable/enable <name>`~~ | ~~중간~~ | ✅ Phase 2 완료 |
-| Codex driver | 중간 | 인터페이스 일반성 검증 |
+| ~~Codex driver~~ | ~~중간~~ | ✅ Phase 3 완료 — 인터페이스 일반성 검증됨 |
 | `harness remove <name>` | 중간 | 가장 위험, 백업 정책 필요 |
 | bundle / package 개념 | 큼 | UX 개선 — "ouroboros 한 번에 끄기" |
 
@@ -579,6 +636,24 @@ class CodexDriver(ProviderDriver):
 2. **코드/데이터 분리** — install이 갈아엎어도 사용자 데이터는 XDG 영역에 안전
 3. **driver 인터페이스 통일** — 새 provider 추가는 driver.py 한 파일 (registry 자동 발견)
 4. **N:N 정직성** — `name`은 unique id 아님, `(provider, kind, name)` 셋이 진짜 키
-5. **dispatcher 동기 잊지 않기** — verb 추가 시 `bin/harness` whitelist 갱신 필수 (이건 한 번 빠뜨려 트러블 발생함)
+5. **dispatcher 동기 잊지 않기** — verb 추가 시 `bin/harness` whitelist 갱신 필수 (한 번 빠뜨려 트러블 발생함)
+6. **외부 의존 zero, standalone 운영** — PyYAML / tomli 모두 회피, 우리 use case 에 맞춰 자체 파서 작성
 
-이번 구현은 **action.adapters 메커니즘의 첫 실체** + **lifecycle 도구의 첫 4개 명령**(list, show, disable, enable). 향후 같은 패턴으로 remove/install이 붙고, Codex driver로 인터페이스가 검증되면 본 구조의 일반성이 확립된다.
+### Phase 3 — Codex driver 추가로 검증된 일반성
+
+Codex driver 를 추가하면서 **공통 코드(`base.py` / `registry.py` / `_mutation.py` / `list.py` / `show.py`)는 한 줄도 수정하지 않음**. driver 폴더 하나만 추가했고, 모든 통합 명령이 자동으로 새 provider 를 인지·제어. 추상화 누수 없음 = ProviderDriver 인터페이스가 정말 일반적이었다는 강한 증거.
+
+**두 driver 비교** (인터페이스가 같은 도구를 다른 provider에 적용한 결과):
+
+| 측면 | Claude | Codex |
+|---|---|---|
+| MCP 저장 | `mcp.json` 단독 (JSON) | `config.toml` 안 섹션 (TOML) |
+| Plugin 메타 | `installed_plugins.json` 별도 | `config.toml` 안 섹션 |
+| Plugin 토글 | `settings.json.enabledPlugins[id]` | `config.toml.plugins."id".enabled` |
+| Skill | `<dir>/SKILL.md` (YAML frontmatter) | **동일** |
+| 파일 수정 패턴 | JSON load → dict 수정 → JSON dump | TOML line-level surgery (섹션 block 보존) |
+| 외부 의존 | 없음 (stdlib `json`) | 없음 (자체 minimal TOML 파서) |
+
+같은 인터페이스(`list/disable/enable`) 가 두 매우 다른 storage 모델 위에서 동일하게 작동.
+
+이번 구현은 **action.adapters 메커니즘의 두 번째 실체** + **lifecycle 도구의 4개 명령**(list, show, disable, enable) 이 두 provider 에서 모두 검증됨. 다음 단계로 `remove` / `install` 이 붙고 향후 다른 provider (예: Cursor) 가 추가되면 본 구조가 일반 시스템으로 자리잡는다.
