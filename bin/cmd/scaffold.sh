@@ -80,6 +80,15 @@ labels = {
     "CONVENTIONS.md": "코딩 컨벤션",
 }
 
+# paths 항목만 한 줄 flow style ({path: ..., label: ...})로 출력
+class FlowDict(dict):
+    pass
+
+def _flow_repr(dumper, data):
+    return dumper.represent_mapping("tag:yaml.org,2002:map", data, flow_style=True)
+
+yaml.add_representer(FlowDict, _flow_repr, Dumper=yaml.SafeDumper)
+
 with open(active_path, "r", encoding="utf-8") as f:
     cfg = yaml.safe_load(f) or {}
 
@@ -95,7 +104,20 @@ for name in files:
     paths.append({"path": name, "label": label})
     added.append(name)
 
-rc["paths"] = paths
+# 기존 + 신규 항목 모두 FlowDict로 감싸 flow style 보존
+rc["paths"] = [FlowDict(p) if isinstance(p, dict) else p for p in paths]
+
+# trigger_read도 동일 패턴이라 같이 보존
+tr = cfg.get("trigger_read")
+if isinstance(tr, list):
+    cfg["trigger_read"] = [FlowDict(t) if isinstance(t, dict) else t for t in tr]
+
+# on_demand_context.paths도 동일
+od = cfg.get("on_demand_context")
+if isinstance(od, dict):
+    od_paths = od.get("paths")
+    if isinstance(od_paths, list):
+        od["paths"] = [FlowDict(p) if isinstance(p, dict) else p for p in od_paths]
 
 if added:
     with open(active_path, "w", encoding="utf-8") as f:
