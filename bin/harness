@@ -18,7 +18,10 @@ Commands (MVP):
   init                   현재 디렉토리에 .harness/ 초기 설정
   link <provider>         provider hook 시스템에 등록 (claude/codex/omo)
   unlink <provider>       등록 해제
-  list                   가용/설치 plugin 목록
+  list                   가용/설치 plugin + provider 통합 아티팩트 목록
+  show <name>            특정 아티팩트 상세 (--provider / --kind 필터)
+  disable <name>         아티팩트 비활성화 (--provider / --kind, --dry-run)
+  enable <name>          아티팩트 활성화 (--provider / --kind, --dry-run)
   install <name>         글로벌 → 프로젝트 symlink + compose.yaml 갱신
   remove <name>          symlink 삭제 + compose.yaml 갱신
   publish <path>         know-how → 글로벌 standard로 promote
@@ -47,7 +50,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|install|remove|publish|fork|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|install|remove|publish|fork|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"
