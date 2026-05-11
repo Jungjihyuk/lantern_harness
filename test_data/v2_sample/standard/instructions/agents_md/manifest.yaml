@@ -1,0 +1,7 @@
+id: agents_md
+domain: cognition
+mechanism: instructions
+purpose: "AGENTS.md prefix 주입용 텍스트"
+roles:
+  - prefix_injection
+entry: ./AGENTS.md
