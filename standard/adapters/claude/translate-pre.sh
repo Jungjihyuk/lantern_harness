@@ -33,7 +33,7 @@ else
 fi
 
 # 표준 hook 호출
-std_output="$(echo "$std_input" | "$HOME/.harness/standard/hooks/pre_tool_use.sh")"
+std_output="$(echo "$std_input" | "$HOME/.harness/standard/hooks/pre_tool_use/pre_tool_use.sh")"
 
 # Claude 응답 형식 (decision/reason은 동일)
 echo "$std_output"

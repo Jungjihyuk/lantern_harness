@@ -28,7 +28,7 @@ done
 
 PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
 HARNESS_HOME="$HOME/.harness"
-RALPH_DIR="$HARNESS_HOME/standard/ralph"
+RALPH_DIR="$HARNESS_HOME/standard/workflows/ralph"
 ACTIVE="$PROJECT_ROOT/.harness/compose.yaml"
 STATE="$RALPH_DIR/lib/state.py"
 

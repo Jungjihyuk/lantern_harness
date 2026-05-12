@@ -1,5 +1,6 @@
 #!/bin/bash
-# harness scaffold <name>... — standard/templates/의 빈 문서를 프로젝트 루트로 복사.
+# harness scaffold <name>... — standard/instructions/templates/의 빈 문서를 프로젝트 루트로 복사.
+# (TODO: v2 manifest 구조 — 폴더 안의 .md 를 찾도록 iteration 갱신 필요)
 # 자동으로 compose.yaml의 required_context.paths에도 추가 (--no-register로 비활성화).
 #
 # 옵션:
@@ -9,7 +10,7 @@
 set -euo pipefail
 
 HARNESS_HOME="$HOME/.harness"
-TEMPLATES_DIR="$HARNESS_HOME/standard/templates"
+TEMPLATES_DIR="$HARNESS_HOME/standard/instructions/templates"
 PROJECT_ROOT="$(pwd)"
 ACTIVE="$PROJECT_ROOT/.harness/compose.yaml"
 

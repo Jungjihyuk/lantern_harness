@@ -219,7 +219,7 @@ fi
 GIT_HOOKS="$PROJECT_ROOT/.git/hooks"
 if [[ -d "$GIT_HOOKS" ]]; then
   HOOK="$GIT_HOOKS/post-commit"
-  HARNESS_LINE="$HOME/.harness/standard/hooks/post_commit.sh \"\$(git rev-parse --show-toplevel)\""
+  HARNESS_LINE="$HOME/.harness/standard/hooks/post_commit/post_commit.sh \"\$(git rev-parse --show-toplevel)\""
   if [[ ! -f "$HOOK" ]]; then
     cat > "$HOOK" <<EOF
 #!/bin/bash
@@ -228,7 +228,7 @@ $HARNESS_LINE
 EOF
     chmod +x "$HOOK"
     echo "✓ git post-commit hook 설치 (진화 자동 추적)"
-  elif ! grep -qF ".harness/standard/hooks/post_commit.sh" "$HOOK"; then
+  elif ! grep -qF ".harness/standard/hooks/post_commit/post_commit.sh" "$HOOK"; then
     echo "" >> "$HOOK"
     echo "# harness evolution tracking" >> "$HOOK"
     echo "$HARNESS_LINE" >> "$HOOK"

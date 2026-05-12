@@ -13,6 +13,6 @@ fi
 # session_start를 dummy session id로 호출
 sid="reload-$(date +%s)"
 echo "{\"hook_type\":\"session_start\",\"session_id\":\"$sid\",\"project_root\":\"$PROJECT_ROOT\"}" \
-  | "$HARNESS_HOME/standard/hooks/session_start.sh"
+  | "$HARNESS_HOME/standard/hooks/session_start/session_start.sh"
 
 echo "✓ runtime/AGENTS.resolved.md 재생성"

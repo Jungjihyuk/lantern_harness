@@ -17,4 +17,4 @@ else
   std_input="$claude_input"
 fi
 
-exec "$HOME/.harness/standard/hooks/user_prompt_submit.sh" <<< "$std_input"
+exec "$HOME/.harness/standard/hooks/user_prompt_submit/user_prompt_submit.sh" <<< "$std_input"

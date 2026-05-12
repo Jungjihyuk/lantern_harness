@@ -18,5 +18,5 @@ else
   std_input="$claude_input"
 fi
 
-std_output="$(echo "$std_input" | "$HOME/.harness/standard/hooks/post_tool_use.sh")"
+std_output="$(echo "$std_input" | "$HOME/.harness/standard/hooks/post_tool_use/post_tool_use.sh")"
 echo "$std_output"
