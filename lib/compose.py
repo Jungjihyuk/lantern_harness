@@ -104,10 +104,10 @@ def _from_dict(data: dict, source_path: Optional[Path] = None) -> Compose:
 def _parse_domain_block(compose: Compose, domain: str, block: dict) -> None:
     """한 도메인 dict 를 순회해 entries / policies / memory 등 분류."""
     for key, value in block.items():
-        if key == "policies" and domain == "guard":
-            # guard.policies 는 flat 결합
+        if key == "policies":
+            # 모든 도메인에서 .policies 는 flat dict 로 결합
             if not isinstance(value, dict):
-                raise ComposeError(f"guard.policies 는 dict 여야 함")
+                raise ComposeError(f"{domain}.policies 는 dict 여야 함")
             compose.policies.update(value)
             continue
 
