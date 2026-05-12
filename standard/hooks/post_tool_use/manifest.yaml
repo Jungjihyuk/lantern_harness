@@ -1,9 +1,10 @@
 id: post_tool_use
 domain: observe
 mechanism: hooks
-purpose: 도구 호출 후 trace 및 metric 기록
+purpose: "도구 호출 성공 후 trace + metric + 상태 추적"
 roles:
-- trace_log
-- metric_collect
+  - trace_log
+  - metric_collect
+  - status_track
 event: post_tool_use
-entry: ./post_tool_use.sh
+entry: ./handler.sh

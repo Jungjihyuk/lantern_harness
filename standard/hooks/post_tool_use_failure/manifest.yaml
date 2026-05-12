@@ -1,0 +1,9 @@
+id: post_tool_use_failure
+domain: observe
+mechanism: hooks
+purpose: "도구 호출 실패 시 trace + 실패 패턴 분석 + verdict"
+roles:
+  - trace_log
+  - eval_verdict
+event: post_tool_use_failure
+entry: ./handler.sh

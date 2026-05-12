@@ -6,4 +6,4 @@ roles:
 - stop_validation
 - trace_log
 event: stop
-entry: ./stop.sh
+entry: ./handler.sh

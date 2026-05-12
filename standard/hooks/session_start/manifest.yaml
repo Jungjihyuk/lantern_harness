@@ -7,4 +7,4 @@ roles:
 - status_init
 - trace_log
 event: session_start
-entry: ./session_start.sh
+entry: ./handler.sh

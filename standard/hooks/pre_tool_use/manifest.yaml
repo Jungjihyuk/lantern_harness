@@ -9,4 +9,4 @@ roles:
 - context_gating
 - trace_log
 event: pre_tool_use
-entry: ./pre_tool_use.sh
+entry: ./handler.sh

@@ -1,0 +1,9 @@
+id: post_tool_batch
+domain: observe
+mechanism: hooks
+purpose: "여러 도구 호출이 묶인 batch 종료 후 통계 집계 + 상태 진단"
+roles:
+  - metric_collect
+  - state_diagnose
+event: post_tool_batch
+entry: ./handler.sh

@@ -215,26 +215,9 @@ if ! grep -qF ".harness/runtime" "$GITIGNORE" 2>/dev/null; then
   echo ".harness/runtime/" >> "$GITIGNORE"
 fi
 
-# 8. git post-commit hook 설치 (진화 추적)
-GIT_HOOKS="$PROJECT_ROOT/.git/hooks"
-if [[ -d "$GIT_HOOKS" ]]; then
-  HOOK="$GIT_HOOKS/post-commit"
-  HARNESS_LINE="$HOME/.harness/standard/hooks/post_commit/post_commit.sh \"\$(git rev-parse --show-toplevel)\""
-  if [[ ! -f "$HOOK" ]]; then
-    cat > "$HOOK" <<EOF
-#!/bin/bash
-# harness evolution tracking
-$HARNESS_LINE
-EOF
-    chmod +x "$HOOK"
-    echo "✓ git post-commit hook 설치 (진화 자동 추적)"
-  elif ! grep -qF ".harness/standard/hooks/post_commit/post_commit.sh" "$HOOK"; then
-    echo "" >> "$HOOK"
-    echo "# harness evolution tracking" >> "$HOOK"
-    echo "$HARNESS_LINE" >> "$HOOK"
-    chmod +x "$HOOK"
-    echo "✓ 기존 post-commit에 harness 진화 hook 추가"
-  fi
+# 8. (v2: post_commit hook 제거됨 — git post-commit 자동 등록 비활성화.
+#     필요 시 사용자가 직접 hook 추가 가능.)
+if false; then
 fi
 
 echo "✓ .harness/ 초기 설정 완료"
