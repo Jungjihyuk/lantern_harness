@@ -1,0 +1,7 @@
+id: ralph
+domain: state
+mechanism: workflows
+purpose: 자가 검증 self-loop 워크플로우
+roles:
+- workflow_step
+entry: ./runner.sh

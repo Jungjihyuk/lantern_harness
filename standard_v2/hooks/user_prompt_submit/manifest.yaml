@@ -1,0 +1,9 @@
+id: user_prompt_submit
+domain: cognition
+mechanism: hooks
+purpose: 사용자 prompt 제출 시 rule reminder + trace
+roles:
+- rule_reminder
+- trace_log
+event: user_prompt_submit
+entry: ./user_prompt_submit.sh

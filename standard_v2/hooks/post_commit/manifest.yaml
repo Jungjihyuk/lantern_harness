@@ -1,0 +1,8 @@
+id: post_commit
+domain: observe
+mechanism: hooks
+purpose: 커밋 후 trace 기록
+roles:
+- trace_log
+event: post_commit
+entry: ./post_commit.sh

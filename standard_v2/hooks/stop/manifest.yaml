@@ -1,0 +1,9 @@
+id: stop
+domain: guard
+mechanism: hooks
+purpose: 세션 종료 직전 stop 조건 검증
+roles:
+- stop_validation
+- trace_log
+event: stop
+entry: ./stop.sh

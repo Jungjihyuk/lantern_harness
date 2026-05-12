@@ -1,0 +1,9 @@
+id: post_tool_use
+domain: observe
+mechanism: hooks
+purpose: 도구 호출 후 trace 및 metric 기록
+roles:
+- trace_log
+- metric_collect
+event: post_tool_use
+entry: ./post_tool_use.sh

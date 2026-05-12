@@ -1,0 +1,7 @@
+id: template_security
+domain: cognition
+mechanism: instructions
+purpose: SECURITY.md 스카폴드 템플릿
+roles:
+- prefix_injection
+entry: ./SECURITY.md

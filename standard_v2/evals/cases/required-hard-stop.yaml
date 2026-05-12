@@ -1,0 +1,27 @@
+id: required-hard-stop
+description: Required Context 중 하나가 hard_stop 마킹된 경우 → 전체 턴 정지 응답
+type: hook_unit
+hook: pre_tool_use
+setup:
+  init_harness: true
+  active_yaml_overrides:
+    required_context:
+      paths:
+        - { path: README.md, label: "프로젝트 정의" }
+        - { path: SECURITY.md, label: "보안 정책", on_deny: hard_stop }
+  files:
+    - { path: README.md, content: "test\n" }
+    - { path: SECURITY.md, content: "secrets\n" }
+  pre_calls:
+    - hook: session_start
+      input: { hook_type: session_start }
+input:
+  hook_type: pre_tool_use
+  tool_name: Edit
+  tool_args:
+    file_path: foo.py
+    old_string: a
+    new_string: b
+expect:
+  exit_code: 0
+  stdout_contains: '"continue": false'

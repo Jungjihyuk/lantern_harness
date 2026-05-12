@@ -1,0 +1,36 @@
+id: loop-detection
+description: 같은 path 3번 연속 수정 시 Doom loop 감지
+type: hook_unit
+hook: pre_tool_use
+setup:
+  init_harness: true
+  active_yaml_overrides:
+    required_context:
+      paths: []
+    loop_detection:
+      enabled: true
+      consecutive_same_path: 3
+      on_loop: self_correct
+  pre_calls:
+    - hook: session_start
+      input: { hook_type: session_start }
+    - hook: post_tool_use
+      input:
+        hook_type: post_tool_use
+        tool_name: Edit
+        tool_args: { file_path: foo.py, old_string: a, new_string: b }
+    - hook: post_tool_use
+      input:
+        hook_type: post_tool_use
+        tool_name: Edit
+        tool_args: { file_path: foo.py, old_string: a, new_string: b }
+input:
+  hook_type: pre_tool_use
+  tool_name: Edit
+  tool_args:
+    file_path: foo.py
+    old_string: a
+    new_string: b
+expect:
+  exit_code: 2
+  stderr_contains: "Doom loop 감지"
