@@ -1,0 +1,7 @@
+id: codex_adapter
+domain: action
+mechanism: adapters
+purpose: Codex CLI provider 결합 (TOML 기반)
+roles:
+- adapter_call
+entry: ./driver.py

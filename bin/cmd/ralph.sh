@@ -11,8 +11,8 @@ set -euo pipefail
 
 HARNESS_HOME="$HOME/.harness"
 PROJECT_ROOT="$(pwd)"
-STATE_PY="$HARNESS_HOME/standard/ralph/lib/state.py"
-RUNNER="$HARNESS_HOME/standard/ralph/runner.sh"
+STATE_PY="$HARNESS_HOME/standard/workflows/ralph/lib/state.py"
+RUNNER="$HARNESS_HOME/standard/workflows/ralph/runner.sh"
 
 if [[ $# -eq 0 ]]; then
   cat <<USAGE

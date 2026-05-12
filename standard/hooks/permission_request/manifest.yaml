@@ -1,0 +1,9 @@
+id: permission_request
+domain: guard
+mechanism: hooks
+purpose: "도구 권한 요청 시점에 허용/거부 결정 + 사용자 안내"
+roles:
+  - permission_gate
+  - trace_log
+event: permission_request
+entry: ./handler.sh

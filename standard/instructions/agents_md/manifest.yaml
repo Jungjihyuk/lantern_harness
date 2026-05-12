@@ -1,0 +1,7 @@
+id: agents_md
+domain: cognition
+mechanism: instructions
+purpose: harness 시스템 prefix 텍스트 (정체성 + 행동 원칙)
+roles:
+- prefix_injection
+entry: ./AGENTS.md
