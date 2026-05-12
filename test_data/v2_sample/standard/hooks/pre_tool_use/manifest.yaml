@@ -1,0 +1,11 @@
+id: pre_tool_use
+domain: guard
+mechanism: hooks
+purpose: "변경 도구 호출 직전 다중 검사"
+roles:
+  - required_check
+  - cognitive_guard
+  - loop_detection
+  - trace_log
+event: pre_tool_use
+entry: ./handler.sh

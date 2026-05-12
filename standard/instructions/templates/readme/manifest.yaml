@@ -1,0 +1,7 @@
+id: template_readme
+domain: cognition
+mechanism: instructions
+purpose: README.md 스카폴드 템플릿
+roles:
+- prefix_injection
+entry: ./README.md

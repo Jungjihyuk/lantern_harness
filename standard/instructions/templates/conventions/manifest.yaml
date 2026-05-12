@@ -1,0 +1,7 @@
+id: template_conventions
+domain: cognition
+mechanism: instructions
+purpose: CONVENTIONS.md 스카폴드 템플릿
+roles:
+- prefix_injection
+entry: ./CONVENTIONS.md

@@ -1,0 +1,7 @@
+id: template_design
+domain: cognition
+mechanism: instructions
+purpose: DESIGN.md 스카폴드 템플릿
+roles:
+- prefix_injection
+entry: ./DESIGN.md

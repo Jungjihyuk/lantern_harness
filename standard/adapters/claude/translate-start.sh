@@ -16,5 +16,5 @@ else
   std_input="$claude_input"
 fi
 
-std_output="$(echo "$std_input" | "$HOME/.harness/standard/hooks/session_start.sh")"
+std_output="$(echo "$std_input" | "$HOME/.harness/standard/hooks/session_start/handler.sh")"
 echo "$std_output"

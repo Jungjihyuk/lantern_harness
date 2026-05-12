@@ -57,14 +57,12 @@ merged="$(echo "$current" | jq \
   --arg pre "$ADAPTER_DIR/translate-pre.sh" \
   --arg post "$ADAPTER_DIR/translate-post.sh" \
   --arg start "$ADAPTER_DIR/translate-start.sh" \
-  --arg stop "$ADAPTER_DIR/translate-stop.sh" \
-  --arg prompt "$ADAPTER_DIR/translate-prompt.sh" '
+  --arg stop "$ADAPTER_DIR/translate-stop.sh" '
   .hooks //= {}
   | .hooks.PreToolUse //= []
   | .hooks.PostToolUse //= []
   | .hooks.SessionStart //= []
   | .hooks.Stop //= []
-  | .hooks.UserPromptSubmit //= []
   | .hooks.PreToolUse  |= ([{matcher: "Edit|Write|NotebookEdit|MultiEdit|Bash|Read|Grep|Glob|WebFetch|WebSearch|Task",
                               hooks: [{type: "command", command: $pre}]}]
                             + (. | map(select((.hooks // [])[0].command != $pre))))
@@ -75,8 +73,6 @@ merged="$(echo "$current" | jq \
                              + (. | map(select((.hooks // [])[0].command != $start))))
   | .hooks.Stop        |= ([{hooks: [{type: "command", command: $stop}]}]
                              + (. | map(select((.hooks // [])[0].command != $stop))))
-  | .hooks.UserPromptSubmit |= ([{hooks: [{type: "command", command: $prompt}]}]
-                                 + (. | map(select((.hooks // [])[0].command != $prompt))))
 ')"
 
 if [[ $DRY_RUN -eq 1 ]]; then

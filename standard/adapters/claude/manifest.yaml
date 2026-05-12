@@ -1,0 +1,7 @@
+id: claude_adapter
+domain: action
+mechanism: adapters
+purpose: Claude Code provider 결합 (driver + hook 번역)
+roles:
+- adapter_call
+entry: ./driver.py

@@ -18,4 +18,4 @@ else
 fi
 
 # stop.sh의 exit code 그대로 전파 (2 = block/재시도, 0 = allow)
-exec "$HOME/.harness/standard/hooks/stop.sh" <<< "$std_input"
+exec "$HOME/.harness/standard/hooks/stop/handler.sh" <<< "$std_input"

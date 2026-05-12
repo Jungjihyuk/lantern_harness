@@ -1,0 +1,20 @@
+version: 2
+
+cognition:
+  instructions:
+    - agents_md
+
+guard:
+  hooks:
+    - {id: pre_tool_use, role: required_check}
+    - {id: pre_tool_use, role: cognitive_guard}
+    - {id: pre_tool_use, role: loop_detection}
+  policies:
+    cognitive_guard:
+      max_diff_lines: 200
+    loop_detection:
+      consecutive_same_path: 3
+
+observe:
+  hooks:
+    - {id: pre_tool_use, role: trace_log}
