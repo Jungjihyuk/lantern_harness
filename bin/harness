@@ -23,6 +23,7 @@ Commands (MVP):
   disable <name>         아티팩트 비활성화 (--provider / --kind, --dry-run)
   enable <name>          아티팩트 활성화 (--provider / --kind, --dry-run)
   validate               compose.yaml v2 + manifests + roles 통합 검증
+  upgrade                v1 → v2 통합 마이그레이션 (standard + compose, --dry-run)
   install <name>         글로벌 → 프로젝트 symlink + compose.yaml 갱신
   remove <name>          symlink 삭제 + compose.yaml 갱신
   publish <path>         know-how → 글로벌 standard로 promote
@@ -51,7 +52,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|show|disable|enable|validate|install|remove|publish|fork|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|validate|upgrade|install|remove|publish|fork|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"
