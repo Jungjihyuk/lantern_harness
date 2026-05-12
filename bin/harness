@@ -24,19 +24,18 @@ Commands (MVP):
   enable <name>          아티팩트 활성화 (--provider / --kind, --dry-run)
   validate               compose.yaml v2 + manifests + roles 통합 검증
   upgrade                v1 → v2 통합 마이그레이션 (standard + compose, --dry-run)
-  install <name>         글로벌 → 프로젝트 symlink + compose.yaml 갱신
-  remove <name>          symlink 삭제 + compose.yaml 갱신
-  publish <path>         know-how → 글로벌 standard로 promote
-  fork <name>            symlink → 로컬 복사 (프로젝트 전용 변형)
-  scaffold <name>...     standard 템플릿(README/SECURITY/DESIGN 등)을 프로젝트에 복사
-  viz <type>             시각화 (workflow/subagents/bottleneck/dashboard)
-  eval <list|run|report> 하네스 동작 평가 (회귀 테스트)
-  improve                사용 패턴 분석 + compose.yaml 조정 제안 (자동 적용 X)
-  judge <run|status>     LLM-as-judge 정성 평가 (compose.yaml로 활성화 + API key)
   ralph <start|status|list|stop>  무인 루프 러너
   reload                 resolved.md 재생성
   doctor                 설정·의존성·등록 진단
   version                버전 정보
+
+Commands (v1 → v2 재정의 예정 — 아직 v1 logic):
+  scaffold <name>...     템플릿을 프로젝트에 복사
+  publish <path>         know-how → 글로벌 standard 로 promote
+  viz <type>             시각화 (workflow/subagents/bottleneck/dashboard)
+  eval <list|run|report> 하네스 동작 평가 (회귀 테스트)
+  improve                사용 패턴 분석 + compose 조정 제안
+  judge <run|status>     LLM-as-judge 정성 평가
 
 Run 'harness <command> --help' for command-specific help.
 USAGE
@@ -52,7 +51,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|show|disable|enable|validate|upgrade|install|remove|publish|fork|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|validate|upgrade|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"
