@@ -177,11 +177,25 @@ def validate_manifest(
 
 
 def _is_snake_case_id(s: str) -> bool:
-    """snake_case 권장 형식 검증 — 알파벳 소문자/숫자/언더스코어/하이픈만, 글자로 시작."""
+    """snake_case 권장 형식 검증.
+
+    규칙:
+      - 글자로 시작 (Unicode letter 포함 — 한글 등)
+      - 이후 character 는: 글자, 숫자, _, -, @, . 중 하나
+      - ASCII 글자는 lowercase 강제. non-ASCII (한글·일본어 등) 는 case 개념 없으니 통과.
+    @ 와 . 는 plugin id (예: "context-mode@context-mode") 허용.
+    """
     if not s:
         return False
     if not s[0].isalpha():
         return False
-    allowed = set("abcdefghijklmnopqrstuvwxyz0123456789_-@.")
-    # @ 와 . 는 plugin id (예: "context-mode@context-mode") 허용
-    return all(ch in allowed for ch in s)
+    for ch in s:
+        if ch.isdigit() or ch in "_-@.":
+            continue
+        if ch.isalpha():
+            # ASCII 글자는 lowercase 강제, non-ASCII 글자는 통과
+            if ord(ch) < 128 and not ch.islower():
+                return False
+            continue
+        return False
+    return True
