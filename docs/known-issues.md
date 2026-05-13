@@ -74,6 +74,7 @@ adapters 는 여전히 "외부 결합 layer" 라는 다른 성격. `standard/ada
 > 진행 이력:
 > - 2026-05-13: `standard_meta.yaml` 제거, `adapters/` 엔진 분리, omo placeholder 제거, `migrate_v2.py` / `migrate_compose.py` / `lib/upgrade.py` / `bin/cmd/upgrade.sh` / `docs/v1-vs-v2.md` 제거, `bin/harness` usage 에서 upgrade 명령 제거, `registry.yaml` ralph path 갱신 (`standard/ralph` → `standard/workflows/ralph`).
 > - 2026-05-13: `standard/workflows/ralph/README.md` 첫 줄 "plugin" → "workflow artifact" 표현 갱신. `standard/tools/` · `standard/traces/` placeholder 폴더 + README 추가 (7 메커니즘 완결성 확보).
+> - 2026-05-13: `standard/hooks/_lib/{evolution.py, policy.py}` 제거 — dead code (호출처 0, v1 compose 스키마 가정). 후속 #6 에서 handler.sh 가 채워질 때 `lib/compose` · `lib/resolver` · `lib/validator` 직접 활용.
 
 ### 4.1 명령·CLI 잔재
 
@@ -96,8 +97,8 @@ adapters 는 여전히 "외부 결합 layer" 라는 다른 성격. `standard/ada
 | 위치 | 잔재 내용 | 처리 방향 |
 |---|---|---|
 | `standard/workflows/ralph/README.md` | 첫 줄 "# ralph plugin" — v1 의 "plugin" 분류 표현 | "workflow artifact" 로 갱신 |
-| `standard/hooks/_lib/evolution.py` | `standard/<name>/ 신규/삭제 → plugin Added/Removed` 룰 (v2 7 메커니즘 구조와 미정렬) | v2 메커니즘별 분류로 점검·갱신 |
-| `standard/hooks/_lib/policy.py` | v2 compose 처리 — 표면적으로는 OK, 정독 점검 필요 | 점검 |
+| ~~`standard/hooks/_lib/evolution.py`~~ | ~~`standard/<name>/ 신규/삭제 → plugin Added/Removed` 룰~~ | **제거됨 (2026-05-13)** — dead code, 호출처 0 |
+| ~~`standard/hooks/_lib/policy.py`~~ | ~~v1 compose 스키마 처리~~ | **제거됨 (2026-05-13)** — dead code, #6 에서 lib/* 직접 활용 |
 | `standard/hooks/*/handler.sh` (7개) | skeleton placeholder | [#6](https://github.com/Jungjihyuk/lantern_harness/issues/6) 후속에서 logic 채워짐 |
 | `standard/evals/cases/*.yaml` (5개) | v1 평면 형식 (`cases/<id>.yaml`), manifest 패턴 미적응 | [#7](https://github.com/Jungjihyuk/lantern_harness/issues/7) 후속에서 `evals/<id>/manifest.yaml + case.yaml` 패턴으로 |
 
