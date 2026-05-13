@@ -12,12 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
 
-# adapters/ 를 sys.path 에 추가해 base/registry 임포트
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from base import KINDS, Item  # noqa: E402
-from registry import discover_drivers, list_all  # noqa: E402
+from lib.adapters.base import KINDS, Item
+from lib.adapters.registry import discover_drivers, list_all
 
 
 def _available_providers() -> list[str]:

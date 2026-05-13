@@ -159,9 +159,11 @@ standard/                            know-how/
 └── roles.yaml                       └── roles.yaml (선택, 사용자 확장)
 ```
 
-- **standard** = 커뮤니티가 검증한 공인 토대
-- **know-how** = 본인이 만든·검증한 추가/override
+- **standard** = 도구/도메인 중립의 검증된 하네스 기본 구성 (시간 따라 합의가 쌓임)
+- **know-how** = 실험적인 하네스 또는 프로젝트 성격이 묻어나는 자산 (override 포함)
 - **id 충돌 정책**: 같은 id 가 양쪽에 있으면 에러. override 원하면 다른 id 로
+
+> 현재 standard 내부 항목 중 일부 (hooks skeleton, evals v1 형식 등) 는 진행 중. 자세한 점진 개선 사안은 [known-issues.md](known-issues.md) 참고.
 
 ---
 

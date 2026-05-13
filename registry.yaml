@@ -26,7 +26,3 @@ adapters:
   - name: codex
     path: standard/adapters/codex
     status: placeholder
-
-  - name: omo
-    path: standard/adapters/omo
-    status: placeholder

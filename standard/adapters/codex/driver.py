@@ -27,9 +27,7 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
-# adapters/codex/driver.py → adapters/ 를 sys.path 에 추가
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from base import Item, ItemNotFound, ProviderDriver  # noqa: E402
+from lib.adapters.base import Item, ItemNotFound, ProviderDriver
 
 
 # ───────────────────── 경로 ─────────────────────

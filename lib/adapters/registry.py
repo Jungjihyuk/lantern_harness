@@ -6,15 +6,26 @@ standard/adapters/<provider>/driver.py 파일을 발견해 ProviderDriver
 from __future__ import annotations
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 from typing import Optional
 
-from base import Item, ProviderDriver
+from lib.adapters.base import Item, ProviderDriver
 
 
-# adapters 폴더 위치 (이 파일이 standard/adapters/registry.py 라고 가정)
-_ADAPTERS_DIR = Path(__file__).resolve().parent
+def _adapters_root() -> Path:
+    """provider artifact (claude/, codex/, ...) 가 위치한 디렉토리.
+
+    HARNESS_HOME 환경변수가 있으면 그 기준, 없으면 이 파일 기준 ../../standard/adapters.
+    """
+    home = os.environ.get("HARNESS_HOME")
+    if home:
+        return Path(home) / "standard" / "adapters"
+    return Path(__file__).resolve().parent.parent.parent / "standard" / "adapters"
+
+
+_ADAPTERS_DIR = _adapters_root()
 
 
 def _load_driver(provider_dir: Path) -> Optional[ProviderDriver]:

@@ -1,27 +1,44 @@
-# ~/.harness/standard
+# standard/
 
-도구·도메인 중립 standard 자원이 평평하게 모이는 곳. 누구나 가져다 자기 프로젝트에 layering으로 적용.
+> **도구/도메인 중립의 검증된 하네스 기본 구성.** 시간이 흐르며 합의가 쌓여간다.
+> 누구나 가져다 자기 프로젝트에 적용 가능하다. 실험적 하네스나 프로젝트 성격이 묻어나는 자산은 `know-how/` 에 둔다.
 
 ## 한눈에 이해하기
 
-`standard/`(공통 기본값)와 프로젝트별 `know-how/`(개인 노하우)는 **부모-자식 관계**.
-같은 path를 know-how가 두면 가려지고(override), `<name>.d/*.sh`로 두면 뒤에 추가 실행(chain).
+- **standard** = 검증된 하네스 (도구/도메인 중립)
+- **know-how** = 실험적 하네스 + 프로젝트 성격이 묻어나는 자산 (override 포함)
+- 같은 id 가 양쪽에 있으면 에러 — override 원하면 다른 id 로
+- 자세한 trust boundary 는 [docs/system-essence.md §8](../docs/system-essence.md) 참고
 
 ## 구조
 
-- `AGENTS.md` — 표준 md (prefix 주입). 4 블록 + Hard Rules.
-- `hooks/` — 표준 hook plugin (session_start · user_prompt_submit · pre_tool_use · post_tool_use · stop · post_commit). Claude Code 이벤트와 1:1 매핑.
-- `ralph/` — 무인 루프 러너 plugin.
-- `adapters/{claude,codex,omo}/` — provider별 어댑터 (hook system 매핑).
+`standard/` 안에는 성격이 다른 2가지가 있다:
 
-## 표준 md 자격 기준
+### 1. Artifact 컨테이너 (7 메커니즘 폴더)
+각 폴더는 `manifest.yaml` 을 가진 artifact 들의 모음:
 
-새 표준 md 추가 시 4 기준 모두 통과해야 함:
-1. 항상 적용되어야 하는가
-2. 압축되면 손해가 큰가
-3. 짧게 표현 가능한가
-4. 프로젝트 무관 보편적인가
+- `instructions/` — 텍스트 prefix
+- `hooks/` — 시점 코드 (session_start, pre_tool_use, post_tool_use, stop 등)
+- `tools/` — 직접 능력 (현재 비어있음, 향후 추가)
+- `adapters/` — provider 결합 코드 (Claude · Codex 등 매핑) ※ 다른 메커니즘과 달리 *결합 layer* 성격
+- `workflows/` — 반복 루프
+- `traces/` — 관측 신호
+- `evals/` — 검증 verdict
 
-## Layering 우선순위
+### 2. Schema 정의
+- `roles.yaml` — 도메인별 허용 role 이름 enum (검증 기준)
 
-프로젝트의 `know-how/`가 `standard/`보다 우선. 같은 path = override, `<name>.d/*.sh` = chain (super 후 추가).
+## 현재 상태 (정직 기록)
+
+- `hooks/` 7개는 현재 **skeleton placeholder** — 실 logic 은 후속 작업에서 채워짐
+- `evals/cases/` 는 **v1 형식** — v2 schema 적응 진행 중
+- 자세한 점진 개선 사안: [docs/known-issues.md](../docs/known-issues.md)
+
+## Artifact 추가 절차
+
+1. 적절한 메커니즘 폴더에 새 artifact 폴더 생성
+2. `manifest.yaml` 작성 (`id` · `domain` · `mechanism` · `roles` · `purpose`)
+3. 프로젝트의 `.harness/compose.yaml` 에 entry 추가
+4. `harness validate` 로 검증
+
+자세한 schema 는 [docs/architecture-v2-schema.md](../docs/architecture-v2-schema.md) 참고.

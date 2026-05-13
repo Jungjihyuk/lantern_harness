@@ -433,7 +433,6 @@ bundle:
 [현재 standard/]                [새 standard/]
 ├── AGENTS.md                ──→ ├── instructions/AGENTS.md
 ├── README.md                ──→ ├── README.md  (그대로, standard 자체 설명)
-├── standard_meta.yaml        ──→ ├── standard_meta.yaml  (v2 형식으로 갱신)
 ├── adapters/                ──→ ├── adapters/  (그대로)
 │   ├── base.py
 │   ├── registry.py
@@ -443,8 +442,7 @@ bundle:
 │   ├── disable.py
 │   ├── enable.py
 │   ├── claude/
-│   ├── codex/
-│   └── omo/
+│   └── codex/
 ├── eval/                    ──→ ├── evals/  (rename, 복수형 통일)
 ├── hooks/                   ──→ ├── hooks/  (그대로)
 ├── ralph/                   ──→ ├── workflows/ralph/  (workflows/ 하위로)

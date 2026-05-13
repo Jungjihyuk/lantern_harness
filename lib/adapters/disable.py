@@ -12,10 +12,8 @@
   --dry-run                  실제 변경 없이 예정만 출력
 """
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _mutation import run  # noqa: E402
+from lib.adapters._mutation import run
 
 
 if __name__ == "__main__":

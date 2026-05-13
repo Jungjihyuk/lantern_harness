@@ -7,13 +7,10 @@ from __future__ import annotations
 
 import argparse
 import sys
-from pathlib import Path
 from typing import Callable
 
-# adapters/ 를 sys.path 에 추가
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from base import KINDS, ItemNotFound  # noqa: E402
-from registry import discover_drivers, get_driver, list_all  # noqa: E402
+from lib.adapters.base import KINDS, ItemNotFound
+from lib.adapters.registry import discover_drivers, get_driver, list_all
 
 
 def _available_providers() -> list[str]:

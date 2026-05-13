@@ -226,19 +226,11 @@ COPY_AS_IS = [
     ("hooks/lib", "hooks/_lib"),                # hook 공유 라이브러리
     ("hooks/README.md", "hooks/README.md"),
     ("eval/cases", "evals/cases"),               # 평가 케이스 데이터
-    ("adapters/omo", "adapters/omo"),            # placeholder provider
     ("adapters/README.md", "adapters/README.md"),
-    ("adapters/base.py", "adapters/base.py"),
-    ("adapters/registry.py", "adapters/registry.py"),
-    ("adapters/list.py", "adapters/list.py"),
-    ("adapters/show.py", "adapters/show.py"),
-    ("adapters/disable.py", "adapters/disable.py"),
-    ("adapters/enable.py", "adapters/enable.py"),
-    ("adapters/_mutation.py", "adapters/_mutation.py"),
-    # register.sh / translate-*.sh 는 adapters/<provider>/ 안에 위치 — 폴더 자산 복사로 자동 포함됨.
+    # provider artifact (claude/, codex/) 는 위 ADAPTER_ARTIFACTS 에서 manifest 와 함께 처리.
+    # 엔진 .py 들은 v2 에서 lib/adapters/ 로 분리됨 — 사용자 v1 에 복사본이 있어도 install.sh 가 새로 깔아주므로 마이그레이션 X.
     ("roles.yaml", "roles.yaml"),
     ("README.md", "README.md"),
-    ("standard_meta.yaml", "standard_meta.yaml"),
 ]
 
 
