@@ -593,9 +593,9 @@ standard/hooks/
 
 → 운영 → 필요 시 분리는 manifest 와 entry 만 갱신하면 되므로 후방 호환.
 
-### 8.4 compose.yaml v1 → v2 자동 변환 규칙
+### 8.4 compose.yaml v1 → v2 자동 변환 규칙 *(history, cutover 완료)*
 
-`harness upgrade` (issue #1) 에서 처리할 자동 변환:
+v1 → v2 cutover 시점에 사용된 변환 규칙:
 
 | v1 키 | v2 위치 | 변환 |
 |---|---|---|
@@ -612,12 +612,12 @@ standard/hooks/
 
 **도전 과제**: path → id 매핑. v1 에선 path 그대로 사용(`README.md`), v2 에선 id (`project_readme`) 필요. 자동 변환 시 path 의 basename + 사용자 확정 step 또는 자동 id 부여 정책 결정 필요.
 
-### 8.5 마이그레이션 사이드 이펙트 분석
+### 8.5 마이그레이션 사이드 이펙트 분석 *(history, cutover 완료)*
 
 | 영향 | 대상 | 완화 방법 |
 |---|---|---|
-| hook 경로 변경 | settings.json 의 Claude Code hook 등록 | `harness link claude` 가 재실행돼 새 경로 등록 |
-| compose.yaml 키 변경 | 기존 사용자의 compose.yaml | `harness upgrade` 가 백업 후 자동 변환 + dry-run |
+| hook 경로 변경 | settings.json 의 Claude Code hook 등록 | `harness link claude` 재실행으로 새 경로 등록 |
+| compose.yaml 키 변경 | 기존 사용자의 compose.yaml | cutover 시점 일괄 변환 |
 | `eval/` → `evals/` rename | 기존 reference 코드 | grep 으로 모든 reference 갱신 (lib/eval/runner.py 등) |
 | `ralph/` → `workflows/ralph/` | bin/cmd/ralph.sh 의 경로 참조 | path 한 줄 갱신 |
 | `templates/` → `instructions/templates/` | bin/cmd/scaffold.sh 의 `TEMPLATES_DIR` | 경로 갱신 |
@@ -662,7 +662,7 @@ guard:
 | 자동 생성 | filename → id (`README.md` → `readme`) | 사용자 부담 0 | 의미 모호, 파일명 바꾸면 id 도 바뀜 |
 | **사용자 명시** ✓ | manifest.yaml 의 `id` 필드 직접 작성 | 의미 명확, 파일명 독립 | 사용자가 manifest 작성 |
 
-**결정**: 사용자 명시. 마이그레이션 시 `harness upgrade` 가 합리적 기본 id 자동 부여 (예: `templates/README.md` → `template_project_readme`), 사용자가 그 후 수정 가능.
+**결정**: 사용자 명시. manifest.yaml 의 `id` 필드를 직접 작성.
 
 **명명 권장**:
 - snake_case (`pre_tool_use` ✓, `PreToolUse` ✗)
@@ -767,12 +767,12 @@ esac
 
 ---
 
-## 9. 다음 단계 (Phase C 이후)
+## 9. 다음 단계 *(history — Phase C/D 완료, E/F 점진)*
 
-**Phase C (코드)**: 본 schema 를 기준으로 resolver / validator / parser 구현. 본 문서가 reference.
+**Phase C (코드)**: 본 schema 를 기준으로 resolver / validator / parser 구현 — 완료.
 
-**Phase D**: `harness upgrade` 자동 마이그레이션 도구 (§8.4 변환 규칙 구현).
+**Phase D**: v1 → v2 자동 마이그레이션 도구 — cutover 완료 후 제거 (v3 시점에 새로 만들 예정).
 
-**Phase E**: 기존 `install/remove` 의미 재정의 — compose.yaml id 추가/제거 의미로 갈지, deprecate 할지 결정.
+**Phase E**: 기존 `install/remove` 의미 재정의 — v2 에서 사용 안 함, 명령 자체 제거됨.
 
-**Phase F**: docs 전면 갱신.
+**Phase F**: docs 전면 갱신 — 점진 진행 중.

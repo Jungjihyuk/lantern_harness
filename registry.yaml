@@ -14,7 +14,7 @@ plugins:
     description: 표준 hook 묶음 — Claude 이벤트와 1:1 매핑 (session_start / user_prompt_submit / pre_tool_use / post_tool_use / stop / post_commit)
 
   - name: ralph
-    path: standard/ralph
+    path: standard/workflows/ralph
     type: leaf
     description: 무인 루프 러너 (단일/chain 모드)
 

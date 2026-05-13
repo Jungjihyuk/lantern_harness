@@ -134,10 +134,9 @@ observe:
 | `harness show <name>` | 단건 상세 |
 | `harness disable / enable <name>` | provider 자산 활성/비활성 토글 |
 | `harness validate` | compose.yaml + manifests + roles 통합 검증 |
-| `harness upgrade` | v1 → v2 통합 마이그레이션 |
 
 provider 자산 (skill/MCP/plugin) 은 `harness list/show/disable/enable` 으로 federation 통합 제어.
-harness 내부 자산 (artifact) 은 `validate/upgrade` 로 schema 일관성 보장.
+harness 내부 자산 (artifact) 은 `validate` 로 schema 일관성 보장.
 
 ---
 

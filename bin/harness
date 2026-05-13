@@ -16,14 +16,13 @@ Usage:
 
 Commands (MVP):
   init                   현재 디렉토리에 .harness/ 초기 설정
-  link <provider>         provider hook 시스템에 등록 (claude/codex/omo)
+  link <provider>         provider hook 시스템에 등록 (claude/codex)
   unlink <provider>       등록 해제
   list                   가용/설치 plugin + provider 통합 아티팩트 목록
   show <name>            특정 아티팩트 상세 (--provider / --kind 필터)
   disable <name>         아티팩트 비활성화 (--provider / --kind, --dry-run)
   enable <name>          아티팩트 활성화 (--provider / --kind, --dry-run)
   validate               compose.yaml v2 + manifests + roles 통합 검증
-  upgrade                v1 → v2 통합 마이그레이션 (standard + compose, --dry-run)
   ralph <start|status|list|stop>  무인 루프 러너
   reload                 resolved.md 재생성
   doctor                 설정·의존성·등록 진단
@@ -51,7 +50,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|show|disable|enable|validate|upgrade|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|validate|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"
