@@ -1,5 +1,5 @@
 
-[My Harness System](My Harness System.md)에서 5장(5-Hook 시스템)이 참조하는 외부 레퍼런스. Claude Code가 hook 시스템에서 **무엇을 기대하는지**, harness가 그 안에서 **무엇을 어떻게 골랐는지**의 detail.
+[입문 §10](01-입문.md#10-hook-시스템) 의 hook 시스템이 참조하는 외부 레퍼런스. Claude Code 가 hook 시스템에서 **무엇을 기대하는지**, harness 가 그 안에서 **무엇을 어떻게 골랐는지** 의 detail.
 
 > 공식 문서: [claude hook](https://code.claude.com/docs/ko/hooks)
 
