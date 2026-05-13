@@ -31,8 +31,7 @@
 ## 현재 상태 (정직 기록)
 
 - `hooks/` 7개는 현재 **skeleton placeholder** — 실 logic 은 후속 작업에서 채워짐
-- `evals/cases/` 는 **v1 형식** — v2 schema 적응 진행 중
-- 자세한 점진 개선 사안: [docs/known-issues.md](../docs/known-issues.md)
+- `evals/cases/` 는 manifest 패턴 미적응 — 재정비 진행 중
 
 ## Artifact 추가 절차
 
@@ -41,4 +40,4 @@
 3. 프로젝트의 `.harness/compose.yaml` 에 entry 추가
 4. `harness validate` 로 검증
 
-자세한 schema 는 [docs/architecture-v2-schema.md](../docs/architecture-v2-schema.md) 참고.
+자세한 schema 는 [docs/architecture.md](../docs/architecture.md) 참고.

@@ -1,24 +1,20 @@
-# Architecture v2 — Schema 사양서
+# Architecture — Schema 사양서
 
-> **목적**: issue #6 (3축 마이그레이션) 의 Phase A 결과물. v2 의 책임/메커니즘/소유 축, role enum, manifest, compose.yaml schema 를 한 문서에 정의.
->
-> **작성 단계**: Phase A — 종이 위에서 schema 확정 (코드 X). Phase B/C 에서 본 문서를 reference 로 구현.
+> **목적**: 이 시스템의 책임 / 메커니즘 / 소유 축, role enum, manifest, compose.yaml schema 를 한 문서에 정의. 본 문서는 schema reference — 구현은 `lib/*.py`.
 
 ## 목차
 
-1. [#1. 개요 — v2 의 정체성](#1-개요--v2-의-정체성)
+1. [#1. 개요 — 시스템의 정체성](#1-개요--시스템의-정체성)
 2. [#2. A-1: 5 책임 도메인](#2-a-1-5-책임-도메인)
 3. [#3. A-2: 7 메커니즘 폴더](#3-a-2-7-메커니즘-폴더)
-4. [#4. A-3: roles.yaml — 도메인별 role enum](#4-a-3-rolesyaml--도메인별-role-enum)
-5. [#5. A-4: manifest.yaml — artifact 메타 schema](#5-a-4-manifestyaml--artifact-메타-schema)
-6. [#6. A-5: compose.yaml v2 schema](#6-a-5-composeyaml-v2-schema)
+4. [#4. A-3: `roles.yaml` — 도메인별 role enum](#4-a-3-rolesyaml--도메인별-role-enum)
+5. [#5. A-4: `manifest.yaml` — artifact 메타 schema](#5-a-4-manifestyaml--artifact-메타-schema)
+6. [#6. A-5: `compose.yaml` schema](#6-a-5-composeyaml-schema)
 7. [#7. 결정 노트](#7-결정-노트)
-8. [#8. Phase B — 기존 자산 매핑](#8-phase-b--기존-자산--새-구조-매핑)
-9. [#9. 다음 단계](#9-다음-단계-phase-c-이후)
-
+8. [#8. 핵심 개념 · 결정사항](#8-핵심-개념--결정사항)
 ---
 
-## 1. 개요 — v2 의 정체성
+## 1. 개요 — 시스템의 정체성
 
 **3개의 직교 축**:
 
@@ -221,7 +217,7 @@ entry: ./handler.sh
 
 ---
 
-## 6. A-5: `compose.yaml` v2 schema
+## 6. A-5: `compose.yaml` schema
 
 ### 6.1 최상위 구조
 
@@ -292,7 +288,7 @@ observe:
   evals:           [<id>, ...]         # 후행 평가
 ```
 
-### 6.4 전체 예시 (현재 시스템을 v2 로 표현)
+### 6.4 전체 예시 (현재 시스템 표현)
 
 ```yaml
 version: 2
@@ -406,226 +402,11 @@ bundle:
 
 → 지금 reserve 안 함. 필요해지면 schema 진화로 자연스럽게 추가.
 
-### compose.yaml v1 → v2 매핑 (Phase B 결과)
-| v1 키 | v2 위치 |
-|---|---|
-| `required_context.paths` | `cognition.context.required` |
-| `trigger_read` | `cognition.context.triggered` |
-| `on_demand_context.paths` | `cognition.context.suggested` |
-| `hard_rules` | `cognition.rules` |
-| `cognitive_guard` | `guard.policies.cognitive_guard` |
-| `loop_detection` | `guard.policies.loop_detection` |
-| `stop_validation` | `guard.evals` + `guard.policies.stop_validation` |
-| `ralph` | `state.workflows: [ralph]` |
-| (hooks 자체) | 각 hook 의 manifest.roles 에 따라 cognition/state/guard/observe 의 hooks 에 분산 |
-
-상세 매핑은 Phase B 에서 추가 작업.
-
 ---
 
-## 8. Phase B — 기존 자산 → 새 구조 매핑
+## 8. 핵심 개념 · 결정사항
 
-본 schema 를 기준으로 현 `standard/*` 자산을 v2 새 구조로 어떻게 옮길지.
-
-### 8.1 폴더 레벨 매핑
-
-```
-[현재 standard/]                [새 standard/]
-├── AGENTS.md                ──→ ├── instructions/AGENTS.md
-├── README.md                ──→ ├── README.md  (그대로, standard 자체 설명)
-├── adapters/                ──→ ├── adapters/  (그대로)
-│   ├── base.py
-│   ├── registry.py
-│   ├── list.py
-│   ├── show.py
-│   ├── _mutation.py
-│   ├── disable.py
-│   ├── enable.py
-│   ├── claude/
-│   └── codex/
-├── eval/                    ──→ ├── evals/  (rename, 복수형 통일)
-├── hooks/                   ──→ ├── hooks/  (그대로)
-├── ralph/                   ──→ ├── workflows/ralph/  (workflows/ 하위로)
-├── skills/                  ──→ (삭제 — federation 원칙. provider 위치에 그대로 둠)
-└── templates/               ──→ └── instructions/templates/  (instructions 하위로)
-
-신규 (현재 없음):
-                                  ├── tools/  (LLM 이 호출하는 직접 능력 — 추후 채움)
-                                  └── traces/  (관측 writer — 추후 채움)
-```
-
-**변화 요약**:
-| 작업 | 대상 | 이유 |
-|---|---|---|
-| 이동 | `AGENTS.md` → `instructions/AGENTS.md` | LLM 이 읽는 텍스트 |
-| 이동 | `templates/*` → `instructions/templates/*` | LLM 이 읽는 스카폴드 자산 |
-| rename | `eval/` → `evals/` | 복수형 통일 (메커니즘 7개 모두 복수형) |
-| 이동 | `ralph/` → `workflows/ralph/` | ralph 는 self-loop = workflow |
-| 삭제 | `skills/` | federation 원칙 — provider 영역 |
-| 신규 | `tools/`, `traces/` | 7 메커니즘 완성. 비어있어도 OK |
-
-### 8.2 hooks/ 파일별 상세 매핑 (N:N 핵심)
-
-현 hook 파일들은 시점별로 묶여 있고, 한 파일이 여러 도메인에 영향. **파일은 그대로 두고 manifest 의 roles 다중 선언 + compose.yaml 에서 다른 entry 로 N:N 등록**.
-
-| 파일 | 시점 (event) | 만족하는 roles | 등록될 compose entry |
-|---|---|---|---|
-| `session_start.sh` | `session_start` | prefix_injection, status_init, trace_log | `cognition.hooks` + `state.hooks` + `observe.hooks` (한 id 3 entry) |
-| `pre_tool_use.sh` | `pre_tool_use` | required_check, cognitive_guard, loop_detection, context_gating, trace_log | `guard.hooks` (3 entry) + `cognition.hooks` + `observe.hooks` |
-| `post_tool_use.sh` | `post_tool_use` | trace_log, metric_collect | `observe.hooks` (2 entry) |
-| `stop.sh` | `stop` | stop_validation, trace_log | `guard.hooks` + `observe.hooks` |
-| `user_prompt_submit.sh` | `user_prompt_submit` | rule_reminder, trace_log | `cognition.hooks` + `observe.hooks` |
-| `post_commit.sh` | `post_commit` (커스텀) | trace_log | `observe.hooks` |
-
-**예시 manifest** (session_start hook):
-```yaml
-# standard/hooks/session_start/manifest.yaml
-id: session_start
-domain: cognition       # 주 도메인 (가장 큰 효과)
-mechanism: hooks
-event: session_start
-entry: ./session_start.sh
-purpose: "세션 시작 시 prefix 주입 + 상태 초기화 + trace 기록"
-roles:
-  - prefix_injection    # cognition 효과
-  - status_init         # state 효과
-  - trace_log           # observe 효과
-```
-
-**예시 compose.yaml entry** (같은 id 가 3 도메인에 등장):
-```yaml
-cognition:
-  hooks:
-    - {id: session_start, role: prefix_injection}
-state:
-  hooks:
-    - {id: session_start, role: status_init}
-observe:
-  hooks:
-    - {id: session_start, role: trace_log}
-```
-
-→ 한 hook 파일을 어떤 효과로 활성화할지 사용자가 명시. 효과 조합 가시화.
-
-#### N:N 매핑 도식
-
-```
-[hook 파일]                  [compose.yaml entry]
-session_start.sh ────┬──→ cognition.hooks: {id: session_start, role: prefix_injection}
-                     ├──→ state.hooks:     {id: session_start, role: status_init}
-                     └──→ observe.hooks:   {id: session_start, role: trace_log}
-
-pre_tool_use.sh  ────┬──→ guard.hooks:    {id: pre_tool_use, role: required_check}
-                     ├──→ guard.hooks:    {id: pre_tool_use, role: cognitive_guard}
-                     ├──→ guard.hooks:    {id: pre_tool_use, role: loop_detection}
-                     └──→ observe.hooks:  {id: pre_tool_use, role: trace_log}
-```
-
-한 hook 의 효과들이 도메인별로 흩어져 표시 → "도메인별로 한눈에" 가시성 실현.
-
-#### 1:N 단순 모델 vs N:N 정직 모델 — 왜 N:N 인가
-
-| 모델 | compose.yaml 모양 | 가시성 |
-|---|---|---|
-| **1:N 단순** | `hooks: [session_start]` 한 줄 | "이게 어떤 효과 주는지" 불분명 |
-| **N:N 정직 (현재 결정)** | 도메인별 entry 분산 | "session_start 가 cognition/state/observe 3가지" 즉시 보임 |
-
-특히 **자기 진화 친화**: agent 가 compose.yaml 만 보고 "현재 시스템이 cognition 에 무엇을 하나" 즉시 파악 가능.
-
-### 8.3 hook 분리 vs 통합 — 결정 보류
-
-#### 현 상태 — 한 파일이 여러 책임
-
-현재 `pre_tool_use.sh` 한 파일이 if-else 와 순차 검사로 5가지 일을 다 처리:
-
-```bash
-# 현 pre_tool_use.sh 내부 흐름
-1. Required Context 미읽음 검사 → 차단 (required_check)
-2. 변경 규모 검사               → 차단 (cognitive_guard)
-3. Doom loop 감지              → 차단 (loop_detection)
-4. cognition context gating    → 차단 (context_gating)
-5. 결정 로그 기록              (trace_log)
-```
-
-한 파일에 5가지 책임이 섞임. v2 manifest 의 roles 에 다 선언.
-
-#### 두 갈래 선택지
-
-**A. 시점별 통합 유지 (현재)**
-```
-standard/hooks/pre_tool_use/
-├── manifest.yaml        # roles: [required_check, cognitive_guard, loop_detection, context_gating, trace_log]
-└── handler.sh           # 한 파일에 다 처리 (현재 그대로)
-```
-- 파일 1개, 책임 5개
-- 마이그레이션 부담 0 (현재 코드 그대로)
-- 단점: 한 파일이 크고 분기 복잡. 한 책임만 수정해도 다른 것에 영향 가능
-
-**B. role 별 분리**
-```
-standard/hooks/
-├── required_check/
-│   ├── manifest.yaml    # roles: [required_check]
-│   └── handler.sh       # Required 검사만
-├── cognitive_guard/
-│   ├── manifest.yaml    # roles: [cognitive_guard]
-│   └── handler.sh       # 변경 규모만
-├── loop_detection/...   # 각 분리
-└── trace_log/...
-```
-- 파일 5개, 각각 단일 책임
-- 단점: 큰 리팩토링. pre_tool_use 시점에 5개를 순차 호출하는 dispatcher 필요
-
-#### 트레이드오프
-
-| 측면 | A (통합) | B (분리) |
-|---|---|---|
-| 마이그레이션 비용 | 0 | 큼 (리팩토링 + dispatcher) |
-| 단일 책임 원칙 | ✗ | ✓ |
-| 각 role 독립 enable/disable | 어려움 (한 파일 안 조건) | 쉬움 (파일 단위) |
-| 디버깅 | 한 곳 다 봐야 | 해당 폴더만 |
-| 새 role 추가 | 기존 파일 수정 | 새 폴더만 추가 |
-
-**Phase B 결정**: 일단 **A 채택** (통합 유지). 이유:
-1. 현재 코드가 이미 작동 — 마이그레이션 부담 최소화
-2. v2 의 본질 (5 도메인 × 7 메커니즘 × N:N) 은 A 로도 충분히 표현됨 (manifest 의 roles 가 N:N 처리)
-3. 실제 운영하면서 "이 hook 만 따로 끄고 싶다" 같은 니즈가 발생하면 그때 B 로 점진 분리
-
-→ 운영 → 필요 시 분리는 manifest 와 entry 만 갱신하면 되므로 후방 호환.
-
-### 8.4 compose.yaml v1 → v2 자동 변환 규칙 *(history, cutover 완료)*
-
-v1 → v2 cutover 시점에 사용된 변환 규칙:
-
-| v1 키 | v2 위치 | 변환 |
-|---|---|---|
-| `prefix:` | `cognition.instructions:` | id 리스트로 |
-| `required_context.paths` | `cognition.context.required` | path/label → id 매핑 (자동 생성 또는 사용자 입력) |
-| `trigger_read` | `cognition.context.triggered` | `match_path` + `require` → `{when, id}` |
-| `on_demand_context.paths` | `cognition.context.suggested` | path/label → id |
-| `hard_rules` | `cognition.rules` | 문자열 리스트 → id 리스트 (각 rule 을 instructions artifact 화) |
-| `cognitive_guard` | `guard.policies.cognitive_guard` | 그대로 |
-| `loop_detection` | `guard.policies.loop_detection` | 그대로 |
-| `stop_validation` | `guard.policies.stop_validation` + `guard.evals` | 정책 + eval 분리 |
-| `llm_judge` | `observe.evals` | 그대로 옮김 |
-| `ralph` | `state.workflows: [ralph]` | id 만 |
-
-**도전 과제**: path → id 매핑. v1 에선 path 그대로 사용(`README.md`), v2 에선 id (`project_readme`) 필요. 자동 변환 시 path 의 basename + 사용자 확정 step 또는 자동 id 부여 정책 결정 필요.
-
-### 8.5 마이그레이션 사이드 이펙트 분석 *(history, cutover 완료)*
-
-| 영향 | 대상 | 완화 방법 |
-|---|---|---|
-| hook 경로 변경 | settings.json 의 Claude Code hook 등록 | `harness link claude` 재실행으로 새 경로 등록 |
-| compose.yaml 키 변경 | 기존 사용자의 compose.yaml | cutover 시점 일괄 변환 |
-| `eval/` → `evals/` rename | 기존 reference 코드 | grep 으로 모든 reference 갱신 (lib/eval/runner.py 등) |
-| `ralph/` → `workflows/ralph/` | bin/cmd/ralph.sh 의 경로 참조 | path 한 줄 갱신 |
-| `templates/` → `instructions/templates/` | bin/cmd/scaffold.sh 의 `TEMPLATES_DIR` | 경로 갱신 |
-| `~/.claude/skills/` 영역 무변경 | provider skill | federation 그대로, 영향 X |
-
-### 8.6 핵심 개념 · 결정사항
-
-#### 8.6.1 `id` 가 무엇인가
+### 8.1 `id` 가 무엇인가
 
 **id** = 한 artifact (hook/instructions/eval/...) 를 **harness 시스템 안에서 유일하게 가리키는 이름표**. manifest.yaml 안에 적힘.
 
@@ -653,7 +434,7 @@ guard:
 
 → **id 는 compose.yaml 과 실 파일을 연결하는 키**.
 
-#### 8.6.2 결정 — id 명명 규칙: 사용자 명시
+### 8.2 결정 — id 명명 규칙: 사용자 명시
 
 **갈래 비교**:
 
@@ -669,7 +450,7 @@ guard:
 - 의미 있는 단어 (`project_readme` ✓, `readme1` ✗, `r1` ✗)
 - harness 전체에서 unique (standard + know-how 통틀어)
 
-#### 8.6.3 결정 — id 충돌 정책: 에러 강제
+### 8.3 결정 — id 충돌 정책: 에러 강제
 
 **충돌 시나리오**:
 
@@ -719,7 +500,7 @@ guard:
 
 → 의도가 명시적으로 표현. 다른 사람이 봐도 "이 프로젝트는 본인 변형 hook 을 쓴다" 즉시 보임. 자기진화 시 agent 도 명확히 인지.
 
-#### 8.6.4 결정 — manifest 위치: artifact 폴더 안
+### 8.4 결정 — manifest 위치: artifact 폴더 안
 
 ```
 standard/hooks/pre_tool_use/
@@ -737,7 +518,7 @@ standard/hooks/pre_tool_use/
 
 **결정**: A 폴더 안. federation 원칙과 일관 (artifact 가 self-contained). 미래 bundle 도 자연스럽 (한 폴더 = 한 패키지). 동적 registry 패턴은 `provider adapter driver 자동 발견`에서 이미 검증됨 — 폴더 순회 부담 없음.
 
-#### 8.6.5 결정 — hook dispatcher: 통합 유지 (현재 그대로)
+### 8.5 결정 — hook dispatcher: 통합 유지 (현재 그대로)
 
 §8.3 의 A 결정과 짝. 한 hook 파일이 시점에 따라 여러 role 을 처리하지만, 내부 분기는 hook 코드가 알아서:
 
@@ -756,7 +537,7 @@ esac
 
 미래에 §8.3 B (role 별 분리) 로 갈 때 dispatcher 가 필요해짐. 지금은 단순.
 
-#### 8.6.6 결정 요약표
+### 8.6 결정 요약표
 
 | 항목 | 결정 |
 |---|---|
@@ -766,13 +547,3 @@ esac
 | hook dispatcher | 통합 유지 — role 은 표시용, 내부 분기는 hook 코드가 처리 |
 
 ---
-
-## 9. 다음 단계 *(history — Phase C/D 완료, E/F 점진)*
-
-**Phase C (코드)**: 본 schema 를 기준으로 resolver / validator / parser 구현 — 완료.
-
-**Phase D**: v1 → v2 자동 마이그레이션 도구 — cutover 완료 후 제거 (v3 시점에 새로 만들 예정).
-
-**Phase E**: 기존 `install/remove` 의미 재정의 — v2 에서 사용 안 함, 명령 자체 제거됨.
-
-**Phase F**: docs 전면 갱신 — 점진 진행 중.

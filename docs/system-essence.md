@@ -1,7 +1,7 @@
 # Harness — 시스템 본질
 
 > 이 시스템이 무엇이고 어떻게 작동하는지 **진짜 핵심만**.
-> 상세 schema 는 `architecture-v2-schema.md`, 구현은 `lib/*.py` 참고.
+> 상세 schema 는 `architecture.md`, 구현은 `lib/*.py` 참고.
 
 ---
 
@@ -59,7 +59,7 @@ manifest.yaml 의 필수 4필드:
 
 | 파일 | 역할 | 비유 |
 |---|---|---|
-| `docs/architecture-v2-schema.md` | 개념·schema 정의 | 헌법 |
+| `docs/architecture.md` | 개념·schema 정의 | 헌법 |
 | `standard/roles.yaml` | 도메인별 허용 role 이름 enum | 직업 목록 |
 | `<artifact>/manifest.yaml` | 개별 artifact 의 메타 | 신분증 |
 | `<project>/.harness/compose.yaml` | 어느 artifact 를 어느 role 로 활성화할지 | 조직도 |
@@ -95,7 +95,7 @@ Claude/Codex 의 skill·MCP·plugin 은 harness 가 소유 X. 원본 위치 그�
 
 ---
 
-## 6. compose.yaml v2 — 활성화 지도
+## 6. compose.yaml — 활성화 지도
 
 ```yaml
 version: 2
@@ -162,7 +162,7 @@ standard/                            know-how/
 - **know-how** = 실험적인 하네스 또는 프로젝트 성격이 묻어나는 자산 (override 포함)
 - **id 충돌 정책**: 같은 id 가 양쪽에 있으면 에러. override 원하면 다른 id 로
 
-> 현재 standard 내부 항목 중 일부 (hooks skeleton, evals v1 형식 등) 는 진행 중. 자세한 점진 개선 사안은 [known-issues.md](known-issues.md) 참고.
+> 현재 standard 내부 항목 중 일부 (hooks skeleton, evals 재정비 중) 는 진행 중.
 
 ---
 
@@ -183,7 +183,7 @@ agent 가 새 기능을 추가할 때 항상 같은 절차:
 
 ---
 
-## 10. v2 구조의 검증 (Codex driver 사례)
+## 10. 구조의 검증 (Codex driver 사례)
 
 Codex driver 를 추가하면서 **공통 코드 (base/registry/mutation/list/show) 한 줄도 수정하지 않음**. driver 폴더 하나만 추가. 모든 통합 명령이 자동으로 새 provider 인지.
 

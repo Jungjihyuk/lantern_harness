@@ -1,6 +1,6 @@
-"""compose.yaml v2 파서 — 5 도메인 × entry 구조 정규화 (v2).
+"""compose.yaml 파서 — 5 도메인 × entry 구조 정규화.
 
-v2 schema 는 docs/architecture-v2-schema.md §6 (A-5) 기준.
+schema 는 docs/architecture.md §6 (A-5) 기준.
 
 특징:
   - 5 도메인 최상위 키 (cognition / state / action / guard / observe)
