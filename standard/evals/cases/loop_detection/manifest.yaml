@@ -1,0 +1,7 @@
+id: loop_detection
+domain: observe
+mechanism: evals
+purpose: 같은 path 3번 연속 수정 시 Doom loop 감지
+roles:
+- eval_verdict
+entry: ./case.yaml

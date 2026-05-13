@@ -31,7 +31,6 @@
 ## 현재 상태 (정직 기록)
 
 - `hooks/` 7개는 현재 **skeleton placeholder** — 실 logic 은 후속 작업에서 채워짐
-- `evals/cases/` 는 manifest 패턴 미적응 — 재정비 진행 중
 
 ## Artifact 추가 절차
 

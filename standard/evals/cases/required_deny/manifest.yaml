@@ -1,0 +1,7 @@
+id: required_deny
+domain: observe
+mechanism: evals
+purpose: Required Context 미읽음 시 Edit 차단 (self_correct)
+roles:
+- eval_verdict
+entry: ./case.yaml
