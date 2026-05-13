@@ -73,6 +73,7 @@ adapters 는 여전히 "외부 결합 layer" 라는 다른 성격. `standard/ada
 >
 > 진행 이력:
 > - 2026-05-13: `standard_meta.yaml` 제거, `adapters/` 엔진 분리, omo placeholder 제거, `migrate_v2.py` / `migrate_compose.py` / `lib/upgrade.py` / `bin/cmd/upgrade.sh` / `docs/v1-vs-v2.md` 제거, `bin/harness` usage 에서 upgrade 명령 제거, `registry.yaml` ralph path 갱신 (`standard/ralph` → `standard/workflows/ralph`).
+> - 2026-05-13: `standard/workflows/ralph/README.md` 첫 줄 "plugin" → "workflow artifact" 표현 갱신. `standard/tools/` · `standard/traces/` placeholder 폴더 + README 추가 (7 메커니즘 완결성 확보).
 
 ### 4.1 명령·CLI 잔재
 

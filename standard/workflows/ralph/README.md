@@ -1,6 +1,6 @@
-# ralph plugin
+# ralph
 
-무인 루프 러너. `compose.yaml`의 `mode: ralph`일 때 활성.
+무인 루프 워크플로 artifact (`mechanism: workflows`, `domain: state`, `role: workflow_step`). `compose.yaml` 의 `state.workflows` entry 로 활성.
 
 ## 두 모드 (자동 선택)
 
