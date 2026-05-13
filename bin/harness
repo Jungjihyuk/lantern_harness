@@ -28,8 +28,10 @@ Commands:
   doctor                 설정·의존성·등록 진단
   version                버전 정보
 
-Commands (개발 중 — 구현 정리 중):
+  ctx <budget|...>       컨텍스트 inspection (cognition entry 별 토큰 등)
   scaffold <name>...     프로젝트 문서 빈 뼈대 생성
+
+Commands (개발 중 — 구현 정리 중):
   publish <path>         know-how → standard 승격
   viz <type>             시각화 (workflow/subagents/bottleneck/dashboard)
   eval <list|run|report> 하네스 동작 평가 (회귀 테스트)
@@ -50,7 +52,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|show|disable|enable|validate|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|validate|ctx|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"
