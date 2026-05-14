@@ -100,6 +100,50 @@ class ValidateDTO(BaseModel):
     entry_count_by_domain: dict[str, int] = Field(default_factory=dict)
 
 
+# ───────────── mutation request/response ─────────────
+
+class EntryCreateRequest(BaseModel):
+    domain: str
+    section: str
+    id: str
+    role: Optional[str] = None
+    extras: dict = Field(default_factory=dict)
+    after_index: Optional[int] = None
+
+
+class EntryUpdateRequest(BaseModel):
+    role: Optional[str] = None
+    extras: Optional[dict] = None
+    clear_role: bool = False
+
+
+class EntryMoveRequest(BaseModel):
+    """drag&drop 결과 — domain / section / after_index 중 변경할 것만 지정."""
+    new_domain: Optional[str] = None
+    new_section: Optional[str] = None
+    after_index: Optional[int] = None
+
+
+class FileWriteRequest(BaseModel):
+    content: str
+
+
+class ManifestWriteRequest(BaseModel):
+    manifest: dict
+
+
+class ArtifactMoveRequest(BaseModel):
+    to: str                        # "standard" | "know-how"
+
+
+class MutationResponse(BaseModel):
+    """모든 mutation 응답: 새 compose + validate 결과 임베드."""
+    compose: ComposeDTO
+    graph: GraphDTO
+    validation: ValidateDTO
+    affected_index: Optional[int] = None
+
+
 # ───────────── error envelope ─────────────
 
 class APIError(BaseModel):

@@ -21,7 +21,7 @@ cd web && npm install && npm run build
 ```bash
 mkdir /tmp/h-demo && cd /tmp/h-demo
 harness init                    # 또는 dev: HARNESS_HOME=... bash bin/cmd/init.sh
-harness dashboard --port 8765
+harness dashboard --port 8766
 ```
 
 브라우저 자동 오픈. 화면:
@@ -53,20 +53,20 @@ harness dashboard --port 8765
 
 ### 6. API 직접 호출
 
-`http://127.0.0.1:8765/docs` — FastAPI Swagger UI. 모든 GET endpoint 인터랙티브 실행.
+`http://127.0.0.1:8766/docs` — FastAPI Swagger UI. 모든 GET endpoint 인터랙티브 실행.
 
 ## 개발 모드
 
 ```bash
 # 터미널 1: backend (reload)
-harness dashboard --port 8765 --reload --no-open
+harness dashboard --port 8766 --reload --no-open
 
 # 터미널 2: frontend dev (hot reload, proxy 자동)
 cd web && npm run dev
 # → http://localhost:5173 자동 오픈
 ```
 
-`vite.config.ts` 가 `/api/*` 를 `8765` 로 proxy.
+`vite.config.ts` 가 `/api/*` 를 `8766` 로 proxy.
 
 ## P1 범위 밖
 

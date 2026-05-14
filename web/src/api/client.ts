@@ -78,6 +78,34 @@ export interface ValidateDTO {
   entry_count_by_domain: Record<string, number>;
 }
 
+export interface MutationResponse {
+  compose: ComposeDTO;
+  graph: GraphDTO;
+  validation: ValidateDTO;
+  affected_index: number | null;
+}
+
+export interface EntryCreateRequest {
+  domain: string;
+  section: string;
+  id: string;
+  role?: string | null;
+  extras?: Record<string, unknown>;
+  after_index?: number | null;
+}
+
+export interface EntryUpdateRequest {
+  role?: string | null;
+  extras?: Record<string, unknown> | null;
+  clear_role?: boolean;
+}
+
+export interface EntryMoveRequest {
+  new_domain?: string;
+  new_section?: string;
+  after_index?: number;
+}
+
 async function getJSON<T>(path: string): Promise<T> {
   const r = await fetch(path);
   if (!r.ok) {
@@ -92,6 +120,25 @@ async function getText(path: string): Promise<string> {
   return r.text();
 }
 
+async function sendJSON<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const r = await fetch(path, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body == null ? undefined : JSON.stringify(body),
+  });
+  if (!r.ok) {
+    let detail = `${r.status}`;
+    try {
+      const j = await r.json();
+      detail = j.detail ?? detail;
+    } catch {
+      /* noop */
+    }
+    throw new Error(`${path}: ${detail}`);
+  }
+  return r.json();
+}
+
 export const api = {
   health:      () => getJSON<{ ok: boolean; version: string }>('/api/health'),
   compose:     () => getJSON<ComposeDTO>('/api/compose'),
@@ -101,4 +148,36 @@ export const api = {
   artifactFile:(id: string, path: string) =>
     getText(`/api/artifacts/${encodeURIComponent(id)}/files?path=${encodeURIComponent(path)}`),
   validate:    () => getJSON<ValidateDTO>('/api/validate'),
+
+  // mutations (P2)
+  addEntry:    (req: EntryCreateRequest) =>
+    sendJSON<MutationResponse>('POST', '/api/compose/entries', req),
+  patchEntry:  (index: number, req: EntryUpdateRequest) =>
+    sendJSON<MutationResponse>('PATCH', `/api/compose/entries/${index}`, req),
+  deleteEntry: (index: number) =>
+    sendJSON<MutationResponse>('DELETE', `/api/compose/entries/${index}`),
+
+  // mutations (P3)
+  moveEntry:   (index: number, req: EntryMoveRequest) =>
+    sendJSON<MutationResponse>('POST', `/api/compose/entries/${index}/move`, req),
+  writeArtifactFile: async (id: string, path: string, content: string) => {
+    const r = await fetch(
+      `/api/artifacts/${encodeURIComponent(id)}/files?path=${encodeURIComponent(path)}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      },
+    );
+    if (!r.ok) {
+      let detail = `${r.status}`;
+      try { detail = (await r.json()).detail ?? detail; } catch {}
+      throw new Error(`PUT file: ${detail}`);
+    }
+    return r.json();
+  },
+  writeManifest: (id: string, manifest: Record<string, unknown>) =>
+    sendJSON<ArtifactDetailDTO>('PUT', `/api/artifacts/${encodeURIComponent(id)}`, { manifest }),
+  moveArtifact: (id: string, to: 'standard' | 'know-how') =>
+    sendJSON<ArtifactDetailDTO>('POST', `/api/artifacts/${encodeURIComponent(id)}/move`, { to }),
 };
