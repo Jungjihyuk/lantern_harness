@@ -70,31 +70,31 @@ def render_agents_md(compose: Compose, resolver: Resolver, project_root: Path) -
             parts.append(f"- {label}: `{src}`")
         parts.append("")
 
-    # 3. context.suggested
-    sug = [e for e in compose.entries
-           if e.domain == "cognition" and e.section == "context.suggested"]
-    if sug:
-        parts.append("## On-Demand Context")
-        parts.append("> 필요 시 참조 (lazy):")
-        parts.append("")
-        for e in sug:
-            src = e.extras.get("src_path", "")
-            label = e.extras.get("label", "") or e.id
-            parts.append(f"- {label}: `{src}`")
-        parts.append("")
-
-    # 4. context.triggered
+    # 3. context.triggered  (= Conditional Required — 강제 + 행동 지침)
     trig = [e for e in compose.entries
             if e.domain == "cognition" and e.section == "context.triggered"]
     if trig:
-        parts.append("## Trigger → Read")
-        parts.append("> 특정 path 매칭 시 강제 읽기:")
+        parts.append("## Conditional Required Context")
+        parts.append("> 편집 path 가 `when` 패턴과 매칭하면 강제 읽기 + 그 안의 행동 지침 따르기:")
         parts.append("")
         for e in trig:
             when = e.extras.get("when", "")
             src = e.extras.get("src_path", "")
             label = e.extras.get("label", "") or e.id
             parts.append(f"- `{when}` → `{src}` ({label})")
+        parts.append("")
+
+    # 4. context.suggested  (= Suggested — 자율 참고, lazy)
+    sug = [e for e in compose.entries
+           if e.domain == "cognition" and e.section == "context.suggested"]
+    if sug:
+        parts.append("## Suggested Context")
+        parts.append("> 필요 시 자율 참고 (lazy, 안 봐도 됨):")
+        parts.append("")
+        for e in sug:
+            src = e.extras.get("src_path", "")
+            label = e.extras.get("label", "") or e.id
+            parts.append(f"- {label}: `{src}`")
         parts.append("")
 
     # 5. rules — 본문 직접 누적

@@ -144,7 +144,7 @@ Required Context 미읽음 같은 **부드러운 거부**는 LLM이 알아서 �
 [Claude의 규약]                          [Harness 매핑]
 ─────────────────────────                ──────────────
 exit 0 + stdout 없음           →          allow
-exit 2 + stderr 메시지         →          self_correct  (Required·trigger·cognitive·loop의 부드러운 거부)
+exit 2 + stderr 메시지         →          self_correct  (Required·Conditional Required·cognitive·loop 의 부드러운 거부)
 JSON {"continue": false}       →          hard_stop     (severity 높은 거부)
 JSON {permissionDecision}      →          (사용 안 함 — exit code로 충분)
 ```
