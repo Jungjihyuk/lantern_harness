@@ -47,16 +47,18 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-# ── 사전 검사: codex_hooks feature flag ────────────────────────────────
+# ── 사전 검사: hooks feature flag ──────────────────────────────────────
+# codex 의 feature flag 이름이 `codex_hooks` (구) → `hooks` (현) 으로 변경됨.
+# 둘 중 하나라도 true 면 통과.
 CODEX_CONFIG="$HOME/.codex/config.toml"
 if [[ -f "$CODEX_CONFIG" ]]; then
-  if ! grep -qE '^\s*codex_hooks\s*=\s*true' "$CODEX_CONFIG"; then
+  if ! grep -qE '^\s*(codex_)?hooks\s*=\s*true' "$CODEX_CONFIG"; then
     echo ""
-    echo "⚠ ~/.codex/config.toml 에 [features] codex_hooks = true 가 없음."
+    echo "⚠ ~/.codex/config.toml 에 [features] hooks = true (구 이름: codex_hooks) 가 없음."
     echo "   hook 시스템이 disable 된 상태라 등록해도 동작 안 함."
     echo "   다음을 추가하세요:"
     echo "       [features]"
-    echo "       codex_hooks = true"
+    echo "       hooks = true"
   fi
 else
   echo ""

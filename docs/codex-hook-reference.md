@@ -4,7 +4,7 @@
 
 > 공식 문서: [codex hooks](https://developers.openai.com/codex/hooks) · [config reference](https://developers.openai.com/codex/config-reference)
 
-> ⚠ Codex 의 hooks 는 비교적 최근에 stable. 기능을 쓰려면 `[features] codex_hooks = true` 활성화 필요 (자세히는 §3).
+> ⚠ Codex 의 hooks 는 비교적 최근에 stable. 기능을 쓰려면 `[features] hooks = true` (또는 옛 이름 `codex_hooks = true`) 활성화 필요 (자세히는 §3).
 
 ## 목차
 
@@ -115,10 +115,10 @@ Hook 시스템 전체가 feature flag 뒤에 있음:
 ```toml
 # ~/.codex/config.toml
 [features]
-codex_hooks = true
+hooks = true
 ```
 
-이게 없으면 hook 자체가 로드되지 않음.
+이게 없으면 hook 자체가 로드되지 않음. 옛 이름 `codex_hooks = true` 도 호환 (codex 가 이름을 마이그레이션 중). 새 환경에선 `hooks` 권장.
 
 ### 3.2 Project trust
 
@@ -328,7 +328,7 @@ turn-scoped 이벤트는 추가로 `turn_id` 필드를 받음.
 
 | 차원 | Claude Code | Codex CLI |
 |---|---|---|
-| **활성화** | 기본 활성 | `[features] codex_hooks = true` 필요 |
+| **활성화** | 기본 활성 | `[features] hooks = true` (또는 옛 `codex_hooks`) 필요 |
 | **등록 위치** | `~/.claude/settings.json` 또는 `<project>/.claude/settings.local.json` | `hooks.json` 또는 `[hooks]` 인라인 (4 location merge) |
 | **layer 합성** | 글로벌 / 프로젝트 *중 한쪽* | 모든 layer **누적** |
 | **프로젝트 trust** | 별도 trust 모델 없음 (settings.local.json 은 그냥 로컬) | `trust_level = "trusted"` 인 프로젝트만 `.codex/` 로드 |
