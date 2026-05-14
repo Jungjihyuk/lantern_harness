@@ -2,7 +2,7 @@
 # harness dashboard — n8n 스타일 시각 편집기 (localhost web UI).
 #
 # 사용:
-#   harness dashboard [--port 8765] [--no-open] [--reload]
+#   harness dashboard [--port 8766] [--no-open] [--reload]
 #
 # 첫 실행 시 fastapi/uvicorn/pydantic deps 필요. 미설치 시 안내.
 
