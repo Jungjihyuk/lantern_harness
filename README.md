@@ -147,22 +147,24 @@ bash uninstall.sh
 
 ## ⌨️ 명령어 한눈에 보기
 
-설치 후 사용 가능한 16개 명령. *카테고리별*로 묶어 한 자리에:
+설치 후 사용 가능한 20개 명령. *카테고리별*로 묶어 한 자리에:
 
 ```bash
 # ─── 시작·연결 ───
 harness init              # 현재 프로젝트에 .harness/ 초기화
 harness link <provider>   # provider hook 등록 (예: .claude/settings.local.json)
 harness unlink <provider> # provider hook 해제
-harness reload            # compose.yaml 변경 후 즉시 반영 (새 세션 안 기다림)
+harness reload            # compose.yaml 변경 후 resolved.md 재생성
 
-# ─── 자원 관리 (standard ↔ know-how) ───
-harness list              # 활성 plugin 목록
-harness install <name>    # 글로벌 standard 자원을 프로젝트로 가져옴 (symlink)
-harness remove <name>     # 가져온 자원 제거
-harness fork <name>       # symlink → 로컬 복사로 변환 (수정 가능)
-harness publish <path>    # know-how를 글로벌 standard로 승격 (자격 검증)
-harness scaffold          # README·SECURITY·DESIGN·CONVENTIONS 빈 뼈대 생성
+# ─── 자원 활성화·검증 ───
+harness list              # 가용/설치 아티팩트 목록 (--provider / --kind 필터)
+harness show <name>       # 특정 아티팩트 상세 (--provider / --kind 필터)
+harness enable <name>     # 아티팩트 활성화 (--dry-run 가능)
+harness disable <name>    # 아티팩트 비활성화 (--dry-run 가능)
+harness validate          # compose.yaml + manifests + roles 통합 검증
+harness ctx <budget|...>  # context inspection (cognition entry 별 토큰 등)
+harness publish <path>    # know-how → standard 승격 (자격 검증)
+harness scaffold <name>   # 프로젝트 문서 빈 뼈대 생성
 
 # ─── 시각 편집·측정 ───
 harness dashboard         # n8n 스타일 web 시각 편집기 (compose CRUD · drag&drop · 본문 편집)
@@ -173,9 +175,10 @@ harness improve           # 사용 패턴 분석 + 룰 기반 개선 제안
 harness judge run         # LLM-as-judge로 응답 정성 평가
 
 # ─── 자동화 (Ralph 무인 루프) ───
-harness ralph start       # 무인 루프 시작 (사람 없이 task → verify 반복)
+harness ralph start       # 무인 루프 시작 (task → verify 반복)
 harness ralph status      # 현재 ralph 실행 상태
 harness ralph list        # 과거 ralph 실행 기록
+harness ralph stop        # 무인 루프 중단
 
 # ─── 진단·메타 ───
 harness doctor            # 환경 진단 — 무엇이 깨졌는지 한 줄로
