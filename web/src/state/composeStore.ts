@@ -5,6 +5,7 @@ import {
   ArtifactSummaryDTO,
   ComposeDTO,
   EntryCreateRequest,
+  EntryMoveRequest,
   EntryUpdateRequest,
   GraphDTO,
   MutationResponse,
@@ -28,6 +29,12 @@ interface ComposeStore {
   addEntry:    (req: EntryCreateRequest) => Promise<void>;
   patchEntry:  (entryIndex: number, req: EntryUpdateRequest) => Promise<void>;
   deleteEntry: (entryIndex: number) => Promise<void>;
+  moveEntry:   (entryIndex: number, req: EntryMoveRequest) => Promise<void>;
+
+  writeArtifactFile:  (id: string, path: string, content: string) => Promise<void>;
+  writeManifest:      (id: string, manifest: Record<string, unknown>) => Promise<void>;
+  moveArtifact:       (id: string, to: 'standard' | 'know-how') => Promise<void>;
+  refreshSelected:    () => Promise<void>;
 }
 
 function nodeIdForEntry(graph: GraphDTO | null, entryIndex: number): string | null {
@@ -108,6 +115,54 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
     } catch (e: any) {
       set({ error: String(e.message ?? e) });
     }
+  },
+
+  async moveEntry(entryIndex, req) {
+    try {
+      const m = await api.moveEntry(entryIndex, req);
+      applyMutation(set, get, m);
+      if (m.affected_index != null) {
+        const nid = nodeIdForEntry(m.graph, m.affected_index);
+        if (nid) await get().selectNode(nid);
+      }
+    } catch (e: any) {
+      set({ error: String(e.message ?? e) });
+    }
+  },
+
+  async writeArtifactFile(id, path, content) {
+    try {
+      await api.writeArtifactFile(id, path, content);
+      await get().refreshSelected();
+    } catch (e: any) {
+      set({ error: String(e.message ?? e) });
+    }
+  },
+
+  async writeManifest(id, manifest) {
+    try {
+      await api.writeManifest(id, manifest);
+      await get().refreshSelected();
+    } catch (e: any) {
+      set({ error: String(e.message ?? e) });
+    }
+  },
+
+  async moveArtifact(id, to) {
+    try {
+      await api.moveArtifact(id, to);
+      // artifact list 갱신 (layer 가 바뀜)
+      const artifacts = await api.artifacts();
+      set({ artifacts });
+      await get().refreshSelected();
+    } catch (e: any) {
+      set({ error: String(e.message ?? e) });
+    }
+  },
+
+  async refreshSelected() {
+    const nid = get().selectedNodeId;
+    if (nid) await get().selectNode(nid);
   },
 }));
 

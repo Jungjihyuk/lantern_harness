@@ -13,13 +13,23 @@ from lib.dashboard.artifact_io import (
     ArtifactIOError,
     detect_layer,
     list_artifact_files,
+    move_artifact_layer,
     parse_manifest_safe,
     read_artifact_file,
     read_manifest_raw,
+    write_artifact_file,
+    write_manifest_raw,
 )
 from lib.dashboard.context import DashboardContext
 from lib.dashboard.routes.compose import get_context
-from lib.dashboard.schema import ArtifactDetailDTO, ArtifactFileDTO, ArtifactSummaryDTO
+from lib.dashboard.schema import (
+    ArtifactDetailDTO,
+    ArtifactFileDTO,
+    ArtifactMoveRequest,
+    ArtifactSummaryDTO,
+    FileWriteRequest,
+    ManifestWriteRequest,
+)
 
 router = APIRouter(prefix="/api/artifacts", tags=["artifacts"])
 
@@ -111,3 +121,66 @@ def read_artifact_file_route(
         raise HTTPException(status_code=404, detail=str(e))
     except ArtifactIOError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+# ───────────── mutation (P3) ─────────────
+
+@router.put("/{artifact_id}/files")
+def write_artifact_file_route(
+    artifact_id: str,
+    req: FileWriteRequest,
+    path: str = Query(..., description="manifest 폴더 내 relative path"),
+    ctx: DashboardContext = Depends(get_context),
+) -> dict:
+    resolver = Resolver(standard_root=ctx.standard_root, know_how_root=ctx.know_how_root)
+    try:
+        manifest_path = resolver.resolve(artifact_id)
+    except IdNotFound as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    try:
+        written = write_artifact_file(manifest_path, path, req.content)
+    except (FileNotFoundError, ArtifactIOError) as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"ok": True, "bytes": written, "path": path}
+
+
+@router.put("/{artifact_id}", response_model=ArtifactDetailDTO)
+def write_manifest_route(
+    artifact_id: str,
+    req: ManifestWriteRequest,
+    ctx: DashboardContext = Depends(get_context),
+) -> ArtifactDetailDTO:
+    resolver = Resolver(standard_root=ctx.standard_root, know_how_root=ctx.know_how_root)
+    try:
+        manifest_path = resolver.resolve(artifact_id)
+    except IdNotFound as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    new_id = req.manifest.get("id")
+    if new_id is not None and new_id != artifact_id:
+        raise HTTPException(status_code=400, detail="manifest.id 변경은 별 op (move) 필요")
+    try:
+        write_manifest_raw(manifest_path, req.manifest)
+    except ArtifactIOError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    # 응답 — 갱신 후 detail 재조회
+    return show_artifact(artifact_id, ctx)
+
+
+@router.post("/{artifact_id}/move", response_model=ArtifactDetailDTO)
+def move_artifact_route(
+    artifact_id: str,
+    req: ArtifactMoveRequest,
+    ctx: DashboardContext = Depends(get_context),
+) -> ArtifactDetailDTO:
+    """artifact 폴더를 standard ↔ know-how 사이 이동."""
+    resolver = Resolver(standard_root=ctx.standard_root, know_how_root=ctx.know_how_root)
+    try:
+        manifest_path = resolver.resolve(artifact_id)
+    except IdNotFound as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    try:
+        move_artifact_layer(manifest_path, ctx.standard_root, ctx.know_how_root, req.to)
+    except ArtifactIOError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    # 새 위치에서 detail 재조회 — Resolver 가 다시 인덱싱 필요
+    return show_artifact(artifact_id, ctx)

@@ -72,6 +72,53 @@ def remove_entry(compose: Compose, index: int) -> ComposeEntry:
     return compose.entries.pop(index)
 
 
+def move_entry(
+    compose: Compose,
+    index: int,
+    *,
+    new_domain: Optional[str] = None,
+    new_section: Optional[str] = None,
+    after_index: Optional[int] = None,
+) -> ComposeEntry:
+    """entry 의 domain / section / 위치 변경.
+
+    new_domain / new_section 미지정 시 기존 값 유지.
+    after_index 미지정 시 같은 (new_domain, new_section) 끝.
+    drag&drop 으로 도메인간 이동 / 정렬 모두 처리.
+    """
+    if not (0 <= index < len(compose.entries)):
+        raise ComposeOpError(f"entry index out of range: {index}")
+
+    e = compose.entries[index]
+    dom = new_domain if new_domain is not None else e.domain
+    sec = new_section if new_section is not None else e.section
+    _validate_domain_section(dom, sec)
+
+    moved = ComposeEntry(
+        id=e.id, role=e.role, domain=dom, section=sec, extras=dict(e.extras)
+    )
+
+    # 원래 위치 제거
+    del compose.entries[index]
+
+    # 새 위치 계산
+    if after_index is not None:
+        # 제거 후 index 보정
+        target = after_index if after_index < index else after_index - 1
+        if not (-1 <= target < len(compose.entries)):
+            raise ComposeOpError(f"after_index out of range: {after_index}")
+        insert_at = target + 1
+    else:
+        last = -1
+        for i, x in enumerate(compose.entries):
+            if x.domain == dom and x.section == sec:
+                last = i
+        insert_at = last + 1 if last >= 0 else len(compose.entries)
+
+    compose.entries.insert(insert_at, moved)
+    return moved
+
+
 def update_entry(
     compose: Compose,
     index: int,

@@ -19,7 +19,13 @@ from lib.resolver import Resolver
 from lib.roles_registry import RolesRegistryError, load_roles
 from lib.validator import validate_compose
 
-from lib.dashboard.compose_ops import ComposeOpError, add_entry, remove_entry, update_entry
+from lib.dashboard.compose_ops import (
+    ComposeOpError,
+    add_entry,
+    move_entry,
+    remove_entry,
+    update_entry,
+)
 from lib.dashboard.compose_writer import write_compose
 from lib.dashboard.context import DashboardContext
 from lib.dashboard.graph import build_graph
@@ -27,6 +33,7 @@ from lib.dashboard.schema import (
     ComposeDTO,
     ComposeEntryDTO,
     EntryCreateRequest,
+    EntryMoveRequest,
     EntryUpdateRequest,
     GraphDTO,
     MutationResponse,
@@ -179,6 +186,36 @@ def patch_entry(
         section=updated.section,
         id_=updated.id,
         role=updated.role,
+    )
+    return _mutation_response(ctx, fresh, affected_index=affected)
+
+
+@router.post("/entries/{index}/move", response_model=MutationResponse)
+def move_compose_entry(
+    index: int,
+    req: EntryMoveRequest,
+    ctx: DashboardContext = Depends(get_context),
+) -> MutationResponse:
+    """drag&drop 결과 — entry 의 domain / section / 위치 변경."""
+    compose = _load(ctx)
+    try:
+        moved = move_entry(
+            compose,
+            index,
+            new_domain=req.new_domain,
+            new_section=req.new_section,
+            after_index=req.after_index,
+        )
+    except ComposeOpError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    write_compose(compose, ctx.compose_path)
+    fresh = parse_compose(ctx.compose_path)
+    affected = _find_index_after_write(
+        fresh,
+        domain=moved.domain,
+        section=moved.section,
+        id_=moved.id,
+        role=moved.role,
     )
     return _mutation_response(ctx, fresh, affected_index=affected)
 
