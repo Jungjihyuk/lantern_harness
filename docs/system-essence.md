@@ -1,7 +1,7 @@
 # Harness — 시스템 본질
 
 > 이 시스템이 무엇이고 어떻게 작동하는지 **진짜 핵심만**.
-> 상세 schema 는 `architecture-v2-schema.md`, 구현은 `lib/*.py` 참고.
+> 상세 schema 는 `architecture.md`, 구현은 `lib/*.py` 참고.
 
 ---
 
@@ -59,7 +59,7 @@ manifest.yaml 의 필수 4필드:
 
 | 파일 | 역할 | 비유 |
 |---|---|---|
-| `docs/architecture-v2-schema.md` | 개념·schema 정의 | 헌법 |
+| `docs/architecture.md` | 개념·schema 정의 | 헌법 |
 | `standard/roles.yaml` | 도메인별 허용 role 이름 enum | 직업 목록 |
 | `<artifact>/manifest.yaml` | 개별 artifact 의 메타 | 신분증 |
 | `<project>/.harness/compose.yaml` | 어느 artifact 를 어느 role 로 활성화할지 | 조직도 |
@@ -95,17 +95,16 @@ Claude/Codex 의 skill·MCP·plugin 은 harness 가 소유 X. 원본 위치 그�
 
 ---
 
-## 6. compose.yaml v2 — 활성화 지도
+## 6. compose.yaml — 활성화 지도
 
 ```yaml
 version: 2
 
 cognition:
-  instructions: [agents_md]           # 텍스트 prefix
-  context:
-    required:  [{id: project_readme}] # 시작 시 필독
+  prefix: [agents_md, rule_01, rule_02]   # 본문 prefix (시스템 안내 / 외부 검증 / Hard Rules — manifest role 로 분류)
+  context:                                # path 메타 — 본문은 lazy
+    required:  [{id: project_readme}]     # 시작 시 필독
     triggered: [{id: api_spec, when: "src/api/**"}]
-  rules: [rule_01, rule_02]
   hooks:
     - {id: session_start, role: prefix_injection}
 
@@ -134,10 +133,9 @@ observe:
 | `harness show <name>` | 단건 상세 |
 | `harness disable / enable <name>` | provider 자산 활성/비활성 토글 |
 | `harness validate` | compose.yaml + manifests + roles 통합 검증 |
-| `harness upgrade` | v1 → v2 통합 마이그레이션 |
 
 provider 자산 (skill/MCP/plugin) 은 `harness list/show/disable/enable` 으로 federation 통합 제어.
-harness 내부 자산 (artifact) 은 `validate/upgrade` 로 schema 일관성 보장.
+harness 내부 자산 (artifact) 은 `validate` 로 schema 일관성 보장.
 
 ---
 
@@ -159,9 +157,11 @@ standard/                            know-how/
 └── roles.yaml                       └── roles.yaml (선택, 사용자 확장)
 ```
 
-- **standard** = 커뮤니티가 검증한 공인 토대
-- **know-how** = 본인이 만든·검증한 추가/override
+- **standard** = 도구/도메인 중립의 검증된 하네스 기본 구성 (시간 따라 합의가 쌓임)
+- **know-how** = 실험적인 하네스 또는 프로젝트 성격이 묻어나는 자산 (override 포함)
 - **id 충돌 정책**: 같은 id 가 양쪽에 있으면 에러. override 원하면 다른 id 로
+
+> 현재 standard 내부 항목 중 일부 (hooks skeleton, evals 재정비 중) 는 진행 중.
 
 ---
 
@@ -182,7 +182,7 @@ agent 가 새 기능을 추가할 때 항상 같은 절차:
 
 ---
 
-## 10. v2 구조의 검증 (Codex driver 사례)
+## 10. 구조의 검증 (Codex driver 사례)
 
 Codex driver 를 추가하면서 **공통 코드 (base/registry/mutation/list/show) 한 줄도 수정하지 않음**. driver 폴더 하나만 추가. 모든 통합 명령이 자동으로 새 provider 인지.
 

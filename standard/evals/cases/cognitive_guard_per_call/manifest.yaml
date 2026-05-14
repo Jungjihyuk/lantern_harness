@@ -1,0 +1,7 @@
+id: cognitive_guard_per_call
+domain: observe
+mechanism: evals
+purpose: per-call max_diff_lines 초과 시 self_correct deny
+roles:
+- eval_verdict
+entry: ./case.yaml

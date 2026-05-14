@@ -8,7 +8,7 @@
 set -euo pipefail
 
 HARNESS_HOME="$HOME/.harness"
-adapters_show="$HARNESS_HOME/standard/adapters/show.py"
+adapters_show="$HARNESS_HOME/lib/adapters/show.py"
 
 if [[ ! -f "$adapters_show" ]]; then
   echo "Error: provider adapter 미설치 — bash install.sh 실행 필요" >&2
@@ -21,4 +21,5 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 # argparse가 usage / -h / 잘못된 인자를 자체 처리하도록 그대로 위임
-exec python3 "$adapters_show" "$@"
+export HARNESS_HOME
+exec env PYTHONPATH="$HARNESS_HOME" python3 -m lib.adapters.show "$@"

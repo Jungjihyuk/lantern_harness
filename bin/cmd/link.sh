@@ -6,7 +6,7 @@ HARNESS_HOME="$HOME/.harness"
 
 if [[ $# -eq 0 ]]; then
   echo "Usage: harness link <provider>" >&2
-  echo "Available: claude, codex, omo" >&2
+  echo "Available: claude, codex" >&2
   exit 1
 fi
 

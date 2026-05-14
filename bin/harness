@@ -14,27 +14,28 @@ harness $VERSION — generalized harness engineering CLI
 Usage:
   harness <command> [args]
 
-Commands (MVP):
+Commands:
   init                   현재 디렉토리에 .harness/ 초기 설정
-  link <provider>         provider hook 시스템에 등록 (claude/codex/omo)
+  link <provider>         provider hook 시스템에 등록 (claude/codex)
   unlink <provider>       등록 해제
   list                   가용/설치 plugin + provider 통합 아티팩트 목록
   show <name>            특정 아티팩트 상세 (--provider / --kind 필터)
   disable <name>         아티팩트 비활성화 (--provider / --kind, --dry-run)
   enable <name>          아티팩트 활성화 (--provider / --kind, --dry-run)
-  validate               compose.yaml v2 + manifests + roles 통합 검증
-  upgrade                v1 → v2 통합 마이그레이션 (standard + compose, --dry-run)
+  validate               compose.yaml + manifests + roles 통합 검증
   ralph <start|status|list|stop>  무인 루프 러너
   reload                 resolved.md 재생성
   doctor                 설정·의존성·등록 진단
   version                버전 정보
 
-Commands (v1 → v2 재정의 예정 — 아직 v1 logic):
-  scaffold <name>...     템플릿을 프로젝트에 복사
-  publish <path>         know-how → 글로벌 standard 로 promote
+  ctx <budget|...>       컨텍스트 inspection (cognition entry 별 토큰 등)
+  scaffold <name>...     프로젝트 문서 빈 뼈대 생성
+
+Commands (개발 중 — 구현 정리 중):
+  publish <path>         know-how → standard 승격
   viz <type>             시각화 (workflow/subagents/bottleneck/dashboard)
   eval <list|run|report> 하네스 동작 평가 (회귀 테스트)
-  improve                사용 패턴 분석 + compose 조정 제안
+  improve                사용 패턴 분석 + 제안
   judge <run|status>     LLM-as-judge 정성 평가
 
 Run 'harness <command> --help' for command-specific help.
@@ -51,7 +52,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|show|disable|enable|validate|upgrade|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|validate|ctx|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"

@@ -1,7 +1,7 @@
 id: template_readme
 domain: cognition
 mechanism: instructions
-purpose: README.md 스카폴드 템플릿
+purpose: "README.md 빈 뼈대 (scaffold source). prefix 본문 아님 — harness scaffold 로 프로젝트 루트에 복사 후 사용자가 채우고, compose.yaml 의 cognition.context entry 로 등록"
 roles:
 - prefix_injection
 entry: ./README.md

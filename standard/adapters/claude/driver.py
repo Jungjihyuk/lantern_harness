@@ -34,9 +34,7 @@ def _harness_data_dir() -> Path:
         return Path(base) / "harness"
     return Path.home() / ".local" / "share" / "harness"
 
-# adapters/claude/driver.py → adapters/ 를 sys.path에 추가해 base 임포트
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from base import Item, ItemNotFound, ProviderDriver  # noqa: E402
+from lib.adapters.base import Item, ItemNotFound, ProviderDriver
 
 
 CLAUDE_HOME = Path.home() / ".claude"

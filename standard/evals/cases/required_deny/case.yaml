@@ -1,0 +1,32 @@
+id: required_deny
+description: Required Context 미읽음 시 Edit 차단 (self_correct)
+type: hook_unit
+hook: pre_tool_use
+setup:
+  init_harness: true
+  files:
+  - path: README.md
+    content: 'test
+
+      '
+  pre_calls:
+  - hook: session_start
+    input:
+      hook_type: session_start
+  compose_overrides:
+    cognition:
+      context:
+        required:
+        - id: req_readme
+          src_path: README.md
+          label: 프로젝트 정의
+input:
+  hook_type: pre_tool_use
+  tool_name: Edit
+  tool_args:
+    file_path: foo.py
+    old_string: a
+    new_string: b
+expect:
+  decision: self_correct
+  reason_contains: Required Context 미읽음

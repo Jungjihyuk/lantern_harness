@@ -1,0 +1,7 @@
+id: required_hard_stop
+domain: observe
+mechanism: evals
+purpose: Required Context 중 하나가 hard_stop 마킹된 경우 → 전체 턴 정지 응답
+roles:
+- eval_verdict
+entry: ./case.yaml

@@ -1,0 +1,43 @@
+id: cognitive_guard_per_call
+description: per-call max_diff_lines 초과 시 self_correct deny
+type: hook_unit
+hook: pre_tool_use
+setup:
+  init_harness: true
+  pre_calls:
+  - hook: session_start
+    input:
+      hook_type: session_start
+  compose_overrides:
+    cognition:
+      context:
+        required: []
+    guard:
+      policies:
+        cognitive_guard:
+          on_breach: self_correct
+          per_call:
+            max_diff_lines: 5
+input:
+  hook_type: pre_tool_use
+  tool_name: Write
+  tool_args:
+    file_path: big.txt
+    content: 'line
+
+      line
+
+      line
+
+      line
+
+      line
+
+      line
+
+      line
+
+      line'
+expect:
+  decision: self_correct
+  reason_contains: per_call.max_diff_lines

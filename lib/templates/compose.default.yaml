@@ -1,0 +1,72 @@
+# compose.yaml — 5 도메인 활성화 매핑.
+# 모든 entry 는 id 로 artifact 참조. `harness validate` 가 일관성 검증.
+# AGENTS.md 는 매 세션 자동 생성 (cognition.instructions + rules 기반).
+
+version: 2
+
+cognition:
+  prefix:                        # 본문이 매 응답 prefix 에 박힘 (시스템 안내 / 외부 검증 / Hard Rules)
+    - agents_md                  # 시스템 안내
+    # - principles_karpathy      # 외부 검증 자산 (선택)
+    # - <hard_rule_id>           # know-how 의 강제 규칙 artifact (manifest role: hard_rule)
+  context:                       # path 메타 카탈로그 — 본문은 lazy (도구로 읽기)
+    required: []                 # 작업 시작 전 반드시. 예: [{id: project_readme, src_path: README.md}]
+    triggered: []                # 작업 매칭 시 강제. 예: [{id: api_spec, src_path: docs/api-spec.md, when: "src/api/**"}]
+    suggested: []                # 자율 참고 (lazy)
+  hooks:
+    - {id: session_start, role: prefix_injection}
+    - {id: pre_tool_use, role: context_gating}   # 작업 시점 컨텍스트 강제 (cognition 도메인)
+
+state:
+  hooks:
+    - {id: session_start, role: status_init}
+    - {id: post_tool_use, role: status_track}
+    - {id: post_tool_use, role: edit_track}        # loop_detection / cognitive_guard 누적 입력
+
+action:
+  adapters:
+    - claude_adapter             # 필요 시 codex_adapter 추가
+
+guard:
+  hooks:
+    - {id: pre_tool_use, role: required_check}
+    - {id: pre_tool_use, role: cognitive_guard}
+    - {id: pre_tool_use, role: path_blocklist}
+    # loop_detection 은 state.workflows 에 ralph 등록 시 자동 활성 (compose 명시 불필요)
+    - {id: permission_request, role: permission_gate}
+    - {id: stop, role: stop_validation}
+  policies:
+    cognitive_guard:
+      per_call: {max_diff_lines: 200, max_new_files: 3}
+      per_session: {max_changed_files: 10, max_diff_lines: 1000}
+      on_breach: ask_human
+      bypass_marker: "@harness allow-large"
+    loop_detection:
+      consecutive_same_path: 3
+      on_loop: self_correct
+    path_blocklist:
+      patterns:
+        - ".env"
+        - ".env.*"
+        - "**/secrets/**"
+        - "**/credentials*"
+        - "**/*.key"
+        - "**/*.pem"
+        - ".git/**"
+    stop_validation:
+      enabled: false
+      on_fail: warn
+      checks: []                  # 예: [{command: "pytest -x"}, {command: "tsc --noEmit"}]
+
+observe:
+  hooks:
+    - {id: session_start, role: trace_log}
+    - {id: session_start, role: state_snapshot}      # 세션 시작 시점의 시스템 hash 기록
+    - {id: session_start, role: drift_check}         # 이전 세션 대비 변경 항목 안내
+    - {id: pre_tool_use, role: trace_log}
+    - {id: post_tool_use, role: trace_log}
+    - {id: post_tool_use, role: metric_collect}
+    - {id: post_tool_use_failure, role: trace_log}
+    - {id: post_tool_use_failure, role: eval_verdict}
+    - {id: post_tool_batch, role: metric_collect}
+    - {id: stop, role: trace_log}

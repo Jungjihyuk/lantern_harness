@@ -8,7 +8,7 @@
 |---|---|---|
 | `session_start.sh` | `SessionStart` | 컨텍스트 초기화 (AGENTS.md 주입, status JSON 초기화) |
 | `user_prompt_submit.sh` | `UserPromptSubmit` | 가드레일 — 입력 필터 (placeholder) |
-| `pre_tool_use.sh` | `PreToolUse` | 게이트 — Required·trigger·loop·cognitive 검사 |
+| `pre_tool_use.sh` | `PreToolUse` | 게이트 — Required·Conditional Required·loop·cognitive·path_blocklist 검사 |
 | `post_tool_use.sh` | `PostToolUse` | 추적 — status·trace·timing 갱신 |
 | `stop.sh` | `Stop` | 작업 검증 (`stop_validation.checks` 실행) |
 | `post_commit.sh` | (git) | 진화 추적 — CHANGELOG 자동 갱신 |

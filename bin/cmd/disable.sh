@@ -8,7 +8,7 @@
 set -euo pipefail
 
 HARNESS_HOME="$HOME/.harness"
-entry="$HARNESS_HOME/standard/adapters/disable.py"
+entry="$HARNESS_HOME/lib/adapters/disable.py"
 
 if [[ ! -f "$entry" ]]; then
   echo "Error: provider adapter 미설치 — bash install.sh 실행 필요" >&2
@@ -20,4 +20,5 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-exec python3 "$entry" "$@"
+export HARNESS_HOME
+exec env PYTHONPATH="$HARNESS_HOME" python3 -m lib.adapters.disable "$@"
