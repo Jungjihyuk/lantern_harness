@@ -4,13 +4,33 @@
     python3 -m lib.dashboard.server [--port 8765] [--no-open]
 
 `bin/cmd/dashboard.sh` 가 호출.
+
+port 가 이미 점유 중이면 다음 free port (최대 10회 시도) 자동 사용.
 """
 from __future__ import annotations
 
 import argparse
+import socket
 import sys
 import webbrowser
 from pathlib import Path
+
+
+def _is_port_free(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind((host, port))
+            return True
+        except OSError:
+            return False
+
+
+def _find_free_port(host: str, start: int, max_tries: int = 10) -> int | None:
+    for offset in range(max_tries):
+        candidate = start + offset
+        if _is_port_free(host, candidate):
+            return candidate
+    return None
 
 try:
     from fastapi import FastAPI
@@ -102,7 +122,18 @@ def main() -> int:
         sys.stderr.write("Error: uvicorn 미설치. pip3 install --user 'uvicorn[standard]'\n")
         return 1
 
-    url = f"http://{args.host}:{args.port}"
+    port = args.port
+    if not _is_port_free(args.host, port):
+        alt = _find_free_port(args.host, port + 1, max_tries=10)
+        if alt is None:
+            sys.stderr.write(
+                f"Error: {args.host}:{port}-{port+10} 모두 사용 중. --port 로 다른 번호 지정.\n"
+            )
+            return 1
+        sys.stderr.write(f"⚠ {args.host}:{port} 점유 중 — {alt} 로 자동 변경\n")
+        port = alt
+
+    url = f"http://{args.host}:{port}"
     sys.stderr.write(f"harness dashboard → {url}\n")
     if not args.no_open:
         try:
@@ -113,7 +144,7 @@ def main() -> int:
     uvicorn.run(
         "lib.dashboard.server:create_app",
         host=args.host,
-        port=args.port,
+        port=port,
         reload=args.reload,
         factory=True,
         log_level="info",
