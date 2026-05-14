@@ -1,22 +1,28 @@
 #!/bin/bash
-# session_start handler (v2 skeleton)
+# session_start handler — 세션 시작 시 AGENTS.md 합성 + state 초기화 + trace.
 #
-# Lifecycle: provider 가 세션 시작 시 envelope JSON 을 stdin 으로 전달.
-# 책임:
-#   - prefix_injection — compose.v2.yaml 의 cognition.instructions 와 rules 를 모아 AGENTS.md(또는 CLAUDE.md) 생성
-#   - status_init      — runtime 상태 파일 초기화 (required context 읽음 추적용)
-#   - trace_log        — 세션 시작 이벤트 기록
+# 책임 (manifest 의 roles):
+#   - prefix_injection: compose cognition entries 합성 → runtime/AGENTS.resolved.md
+#   - status_init:      runtime/sessions/<id>/ 상태 파일 초기화
+#   - trace_log:        session_start 이벤트 기록
 #
-# stdin envelope (예):
+# stdin: 표준 envelope JSON
 #   {"hook_type":"session_start","session_id":"...","project_root":"...","transcript_path":"..."}
 #
-# stdout 응답:
-#   {"decision":"allow"}   (또는 메타 정보)
+# stdout: {"decision":"allow"}
 #
-# TODO: lib/resolver + lib/compose 활용해 v2 compose 읽어 AGENTS.md 생성하는 로직 추가.
+# 실 logic 은 lib/hooks/session_start.py.
 
 set -euo pipefail
-input="$(cat)"
 
-# placeholder: 일단 통과
-echo '{"decision":"allow"}'
+HARNESS_HOME="${HARNESS_HOME:-$HOME/.harness}"
+
+# install 된 lib 우선, 없으면 dev fallback
+if [[ -d "$HARNESS_HOME/lib/hooks" ]]; then
+  LIB_ROOT="$HARNESS_HOME"
+else
+  LIB_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+fi
+
+export HARNESS_HOME
+exec env PYTHONPATH="$LIB_ROOT" python3 -m lib.hooks.session_start
