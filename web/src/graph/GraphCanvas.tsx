@@ -6,6 +6,7 @@ import {
   Controls,
   MiniMap,
   Edge,
+  MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -13,11 +14,8 @@ import { useComposeStore } from '../state/composeStore';
 import { autoLayout } from './layout';
 import { nodeTypes } from './nodeTypes';
 
-const EDGE_STYLE = {
-  time_order:     { stroke: '#666', strokeWidth: 1.5 },
-  artifact_share: { stroke: '#aaa', strokeDasharray: '4 4' },
-  context_dep:    { stroke: '#f59e0b', strokeDasharray: '2 4' },
-};
+const ARROW = { type: MarkerType.ArrowClosed, color: '#666', width: 18, height: 18 };
+const EDGE_STYLE = { stroke: '#666', strokeWidth: 1.5 };
 
 export function GraphCanvas() {
   const graph = useComposeStore((s) => s.graph);
@@ -41,8 +39,10 @@ export function GraphCanvas() {
       id: `e${i}`,
       source: e.source,
       target: e.target,
+      type: 'smoothstep',
       animated: false,
-      style: EDGE_STYLE[e.kind],
+      style: EDGE_STYLE,
+      markerEnd: ARROW,
     }));
   }, [graph]);
 

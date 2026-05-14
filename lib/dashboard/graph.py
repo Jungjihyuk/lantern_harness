@@ -41,19 +41,18 @@ def _node_id(entry: ComposeEntry, index: int) -> str:
 
 
 def build_graph(compose: Compose, resolver: Resolver) -> GraphDTO:
-    """Compose → GraphDTO (nodes/edges/clusters)."""
+    """Compose → GraphDTO. 엣지 = hook 실행 시간 순서 (time_order) 만."""
     nodes: list[NodeDTO] = []
     by_domain: dict[str, list[str]] = {d: [] for d in DOMAIN_COLORS}
-    by_artifact_id: dict[str, list[str]] = {}        # artifact_id → [node_id ...]
-    hook_event_nodes: dict[str, list[str]] = {}      # entry.id (hook event) → [node_id ...]
-    triggered_when_nodes: list[tuple[str, str]] = [] # (node_id, when_glob)
+    # entry.id (hook event) → compose 등장 순으로 [node_id ...]
+    hook_event_nodes: dict[str, list[str]] = {}
 
     for idx, entry in enumerate(compose.entries):
         nid = _node_id(entry, idx)
-        manifest, manifest_err = _try_resolve(resolver, entry.id)
+        manifest, _err = _try_resolve(resolver, entry.id)
         badges = _build_badges(entry, manifest)
 
-        node = NodeDTO(
+        nodes.append(NodeDTO(
             id=nid,
             entry_index=idx,
             artifact_id=entry.id,
@@ -64,53 +63,29 @@ def build_graph(compose: Compose, resolver: Resolver) -> GraphDTO:
             manifest_found=(manifest is not None),
             manifest_purpose=(manifest.purpose if manifest else None),
             badges=badges,
-        )
-        nodes.append(node)
+        ))
         by_domain.setdefault(entry.domain, []).append(nid)
-        by_artifact_id.setdefault(entry.id, []).append(nid)
 
-        # hook event grouping — hooks 메커니즘 entry 만
-        if entry.section in ("hooks",) and entry.id in HOOK_EVENT_ORDER:
+        if entry.section == "hooks" and entry.id in HOOK_EVENT_ORDER:
             hook_event_nodes.setdefault(entry.id, []).append(nid)
 
-        # context.triggered when
-        if entry.section == "context.triggered" and entry.extras.get("when"):
-            triggered_when_nodes.append((nid, str(entry.extras["when"])))
-
+    # time_order — event 간 chronological + event 안 compose 등장 순.
     edges: list[EdgeDTO] = []
-
-    # 1) time_order — hook event 간 chronological. event 안에서는 compose 순서.
     prev_last: Optional[str] = None
     for event in HOOK_EVENT_ORDER:
         members = hook_event_nodes.get(event, [])
         if not members:
             continue
-        # event 내부: chain (compose 순서)
         for a, b in zip(members, members[1:]):
             edges.append(EdgeDTO(source=a, target=b, kind="time_order"))
         if prev_last is not None:
             edges.append(EdgeDTO(source=prev_last, target=members[0], kind="time_order"))
         prev_last = members[-1]
 
-    # 2) artifact_share — 같은 artifact_id 의 노드들끼리 점선 (양 끝 한 쌍만 — fanout 방지)
-    for aid, nlist in by_artifact_id.items():
-        if len(nlist) < 2:
-            continue
-        for a, b in zip(nlist, nlist[1:]):
-            edges.append(EdgeDTO(source=a, target=b, kind="artifact_share"))
-
-    # 3) context_dep — triggered.when glob 이 매칭할 만한 action/pre_tool_use 노드로
-    #    (P1 은 단순화: when 이 있는 노드 → 모든 pre_tool_use 노드)
-    pre_tool_nodes = hook_event_nodes.get("pre_tool_use", [])
-    for nid, when in triggered_when_nodes:
-        for target in pre_tool_nodes:
-            edges.append(EdgeDTO(source=nid, target=target, kind="context_dep"))
-
     clusters = [
         ClusterDTO(id=d, label=d, color=DOMAIN_COLORS[d], node_ids=by_domain.get(d, []))
         for d in DOMAIN_COLORS
     ]
-
     return GraphDTO(nodes=nodes, edges=edges, clusters=clusters)
 
 
