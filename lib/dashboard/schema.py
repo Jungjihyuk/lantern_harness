@@ -100,6 +100,31 @@ class ValidateDTO(BaseModel):
     entry_count_by_domain: dict[str, int] = Field(default_factory=dict)
 
 
+# ───────────── mutation request/response ─────────────
+
+class EntryCreateRequest(BaseModel):
+    domain: str
+    section: str
+    id: str
+    role: Optional[str] = None
+    extras: dict = Field(default_factory=dict)
+    after_index: Optional[int] = None
+
+
+class EntryUpdateRequest(BaseModel):
+    role: Optional[str] = None
+    extras: Optional[dict] = None
+    clear_role: bool = False
+
+
+class MutationResponse(BaseModel):
+    """모든 mutation 응답: 새 compose + validate 결과 임베드."""
+    compose: ComposeDTO
+    graph: GraphDTO
+    validation: ValidateDTO
+    affected_index: Optional[int] = None
+
+
 # ───────────── error envelope ─────────────
 
 class APIError(BaseModel):
