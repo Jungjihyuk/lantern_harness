@@ -296,7 +296,7 @@ version: 2
 cognition:
   prefix:                         # 본문이 매 응답 prefix 에 박힘 (시스템 안내 / 외부 검증 / Hard Rules)
     - AGENTS_base
-    # - principles_karpathy        # 외부 검증 자산 (선택)
+    # - agents_md_karpathy         # 외부 검증 자산 (선택)
     - rule_no_silent_failure       # Hard Rules (manifest role: hard_rule)
     - rule_korean_domain_terms     # Hard Rules
   context:                        # path 메타 — 본문은 lazy

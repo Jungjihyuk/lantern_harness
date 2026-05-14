@@ -18,7 +18,7 @@ DEST="$HOME/.harness"
 SCRIPT_DIR=""
 if [[ "${BASH_SOURCE[0]:-}" != "" ]]; then
   candidate_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || echo "")"
-  # v1: standard/AGENTS.md, v2: standard/roles.yaml — 어느 쪽이든 있으면 dev repo
+  # dev repo 마커: bin/harness 또는 standard/roles.yaml 존재
   if [[ -n "$candidate_dir" && ( -f "$candidate_dir/bin/harness" || -f "$candidate_dir/standard/roles.yaml" ) ]]; then
     SCRIPT_DIR="$candidate_dir"
   fi

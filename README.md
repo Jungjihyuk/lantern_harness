@@ -54,6 +54,7 @@ curl -fsSL https://raw.githubusercontent.com/Jungjihyuk/lantern_harness/main/ins
 — **standard** 는 도구/도메인 중립의 *검증된 하네스 기본 구성*입니다. **know-how** 에는 *실험적인 하네스* 또는 *프로젝트 성격이 묻어나는 자산*을 둡니다. <br>
 - 두 축이 자유롭게 결합되어 하네스 구조를 $\color{#D97706}{\textbf{추가}}$ · $\color{#D97706}{\textbf{수정}}$ · $\color{#D97706}{\textbf{삭제}}$ 하기 쉬운 시스템 <br>
 — 검증된 노하우 위에 자기 결을 얹어 빚어갈 수 있습니다.
+- 자원은 **5 책임 도메인**(`cognition` / `state` / `action` / `guard` / `observe`) × **7 메커니즘 폴더**(`instructions` / `hooks` / `tools` / `adapters` / `workflows` / `traces` / `evals`) 의 직교 분류로 정리됩니다 — *효과* 와 *구현* 을 분리해 한 자원이 여러 역할로 등록될 수 있게 (N:N). 자세한 framing 은 [`docs/architecture.md`](docs/architecture.md).
 
 ### 왜 만들었나
 
@@ -68,10 +69,11 @@ curl -fsSL https://raw.githubusercontent.com/Jungjihyuk/lantern_harness/main/ins
 |     | 기능 | 무엇을 |
 | --- | --- | --- |
 | 🪝 | **5-Hook 시스템** | Claude 이벤트 5종(`SessionStart` / `UserPromptSubmit` / `PreToolUse` / `PostToolUse` / `Stop`)에 1:1 매핑 — 도구 호출 직전 가로채 자가수정 유도 |
-| 🎯 | **AGENTS.md 자동 생성 (SSOT)** | `compose.yaml` 한 파일에서 4 블록 구조 생성 → 매 세션 LLM prefix에 주입 |
+| 🎯 | **AGENTS.md 자동 생성 (SSOT)** | `compose.yaml` (5 도메인 × 7 메커니즘 schema) 에서 `cognition.prefix` + `cognition.context` 3-단(`required` / `triggered` / `suggested`) 합성 → 매 세션 LLM prefix 에 주입 |
 | 🛡️ | **인지 한계 가드레일** | Cognitive Guard · Doom Loop 감지 · Stop Validation — *bypass marker*로 의도적 우회 가능 |
-| 🔄 | **Ralph 무인 루프** | 사람 없이 task 명세만 주고 verify까지 반복 (단일 task · stage chain) |
-| 📊 | **6 viz + Live Dashboard** | workflow·subagents·bottleneck·eval·improve·prompts 시각화 + SSE 라이브 대시보드 + 인터랙티브 편집 |
+| 🔄 | **Ralph 무인 루프** | `state.workflows[ralph]` 에 task·verify 명세만 주고 사람 없이 verify까지 반복 |
+| 🪟 | **시각 편집 대시보드** | `harness dashboard` — n8n 스타일 web UI 에서 compose entry CRUD · 노드 drag&drop · 본문 편집 |
+| 📊 | **6 viz** | workflow · subagents · bottleneck · eval · improve · prompts 정적 시각화 (`harness viz <type>`) |
 | 🧪 | **측정·개선 도구** | Eval 회귀 테스트 · Improve 룰 기반 제안 · LLM-as-judge (claude_cli / codex / manual) |
 | 🔌 | **Provider 어댑터** | Claude Code 통합 구체 + Codex/기타 placeholder · 표준 envelope으로 도구 무관 |
 | 🌱 | **하네스 자체 진화** | git post-commit으로 CHANGELOG 자동 갱신 · `know-how` → `standard` 승격 (publish 자격 검증) |
@@ -87,6 +89,8 @@ curl -fsSL https://raw.githubusercontent.com/Jungjihyuk/lantern_harness/main/ins
 ```
 
 한 줄로 끝. 설치 스크립트가 자동으로 repo를 임시 폴더에 받아 `~/.harness/`로 복사합니다.
+
+설치 중 `harness dashboard` 가 사용할 Python deps (`fastapi` / `uvicorn` / `pydantic`) 도 자동으로 user-pip 에 설치됩니다. 건너뛰려면 `SKIP_DASHBOARD_DEPS=1` 환경변수를 함께 설정하세요.
 
 > ⚠️ `curl | bash`는 코드를 검토 없이 실행합니다.
 
@@ -106,7 +110,8 @@ cd <my-project>
 harness init                # .harness/ 초기화
 harness link claude         # provider hook 등록 (.claude/settings.local.json)
 
-# .harness/compose.yaml 을 편집기로 열어 정책 설정 (required_context 등)
+# .harness/compose.yaml 을 편집기로 열어 정책 설정 (cognition.context.required 등)
+# 또는: harness dashboard 로 시각 편집기에서 entry 추가/수정
 
 claude                      # 새 세션 열기 (AGENTS.md 자동 주입 + 가드레일 활성)
 ```
@@ -122,7 +127,7 @@ claude                      # 새 세션 열기 (AGENTS.md 자동 주입 + 가�
 
 - **macOS** 또는 **Linux**
 - **Bash** 4+
-- **Python** 3.10+ (PyYAML 필요 — `pip install pyyaml`)
+- **Python** 3.10+ (PyYAML 필수 — `pip install pyyaml`. `harness dashboard` 사용 시 `fastapi` / `uvicorn` / `pydantic` 도 필요 — install.sh 가 자동 설치)
 - **jq** (필수) — `brew install jq` / `apt install jq`
 - **git** (진화 추적용)
 - **LLM CLI 중 하나 이상**:
@@ -159,9 +164,10 @@ harness fork <name>       # symlink → 로컬 복사로 변환 (수정 가능)
 harness publish <path>    # know-how를 글로벌 standard로 승격 (자격 검증)
 harness scaffold          # README·SECURITY·DESIGN·CONVENTIONS 빈 뼈대 생성
 
-# ─── 측정·시각화 ───
+# ─── 시각 편집·측정 ───
+harness dashboard         # n8n 스타일 web 시각 편집기 (compose CRUD · drag&drop · 본문 편집)
 harness viz <type>        # 6 viz 렌더러 (workflow/subagents/bottleneck/eval/improve/prompts)
-harness viz dashboard     # 라이브 SSE 대시보드 (브라우저)
+harness viz dashboard     # 라이브 SSE 대시보드 (read-only)
 harness eval              # 회귀 테스트 실행 (기본 5 케이스 + 프로젝트 추가분)
 harness improve           # 사용 패턴 분석 + 룰 기반 개선 제안
 harness judge run         # LLM-as-judge로 응답 정성 평가
@@ -176,7 +182,30 @@ harness doctor            # 환경 진단 — 무엇이 깨졌는지 한 줄로
 harness version           # 버전·plugin·linked provider 표시
 ```
 
-자주 쓰는 5개 입문 명령은 [`docs/01-입문.md`](docs/01-입문.md) 9장 — 전체 16개 명령의 옵션·시나리오는 [`docs/02-중급.md`](docs/02-중급.md) 9장 참조.
+자주 쓰는 5개 입문 명령은 [`docs/01-입문.md`](docs/01-입문.md) 9장 — 전체 명령의 옵션·시나리오는 [`docs/02-중급.md`](docs/02-중급.md) 9장 참조.
+
+---
+
+## 🪟 시각 편집 — `harness dashboard`
+
+`compose.yaml` 을 직접 손대지 않고도 entry 를 추가·삭제·이동할 수 있는 **로컬 web 편집기**. n8n 스타일의 노드 그래프 위에서 5 도메인 × 7 메커니즘 구조가 그대로 펼쳐집니다.
+
+```bash
+harness dashboard                 # 기본 포트 8766, 브라우저 자동 오픈
+harness dashboard --port 9000     # 포트 지정
+harness dashboard --no-open       # 브라우저 자동 오픈 끄기
+```
+
+할 수 있는 일:
+- compose entry **추가 / role 변경 / 삭제** (서버가 `compose.yaml` 안전 저장)
+- 노드 **drag&drop** 으로 시각 정렬 (artifact 의 layer 이동 포함)
+- artifact 본문(예: `instructions/*/body.md`) **인라인 편집**
+
+포트가 점유돼 있으면 자동으로 다음 free port (최대 10회) 를 시도합니다. 디폴트 8766 은 agentcat daemon 과 충돌 회피 차원의 선택입니다.
+
+> Python deps (`fastapi` / `uvicorn` / `pydantic`) 는 install.sh 가 자동 설치합니다. 수동 설치는 `pip3 install --user fastapi 'uvicorn[standard]' 'pydantic>=2'`.
+
+수동 테스트 시나리오는 [`docs/dashboard-manual-test.md`](docs/dashboard-manual-test.md) 참조.
 
 ---
 
@@ -194,7 +223,11 @@ harness version           # 버전·plugin·linked provider 표시
 
 | 문서 | 내용 |
 |------|------|
+| [`docs/architecture.md`](docs/architecture.md) | 5 책임 도메인 × 7 메커니즘 직교 설계 + `compose.yaml` schema 전체 |
+| [`docs/system-essence.md`](docs/system-essence.md) | "왜 이렇게 설계했는가" — 핵심 개념의 일관된 뿌리 |
+| [`docs/provider-adapter.md`](docs/provider-adapter.md) | provider adapter (claude / codex / 기타) 규약과 envelope |
 | [`docs/claude-hook-reference.md`](docs/claude-hook-reference.md) | Claude Hook 시스템 규약·exit code 프로토콜 |
+| [`docs/dashboard-manual-test.md`](docs/dashboard-manual-test.md) | `harness dashboard` 수동 테스트 시나리오 |
 
 처음 보는 분은 **입문**부터. 자체 완결되어 있어 단일 에이전트는 입문만으로 충분히 운영 가능합니다.
 
