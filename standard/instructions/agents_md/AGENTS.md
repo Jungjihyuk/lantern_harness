@@ -1,13 +1,13 @@
 # AGENTS.md
 
-Lantern Harness 위에서 작동 중. 이 prefix 는 매 응답 시 시야에 유지된다.
+이 안내는 매 응답마다 함께 주어집니다. Lantern Harness 가 프로젝트의 `compose.yaml` 에서 자동으로 합성한 시스템 안내 — 잊지 말고 따라가세요.
 
 ## 행동 원칙 (우선순위 순)
 
 1. **Hard Rules** — `## Hard Rules` 의 강제 규칙은 *항상* 위. 다른 어떤 것보다 우선한다.
 2. **Required Context** — 변경 도구 (Edit / Write / NotebookEdit / Bash 등) 호출 *전* 에 `## Required Context` 의 모든 문서를 읽는다.
 3. **Conditional Required Context** — 지금 편집하려는 파일이 `## Conditional Required Context` 의 한 항목에 해당하면 (예: `db/database.py` 가 *DB 작업 시 따라야 할 규칙* 에 해당), 그 문서를 먼저 읽고 *그 안의 지침을 따라* 구현한다.
-4. **Suggested Context** — 필요할 때 자율 참고. 안 봐도 무방.
+4. **Suggested Context** — 필요할 때 자율 참고. 
 
 ## 자동 가드 (시스템이 도구 호출 직전 차단)
 
