@@ -1,21 +1,37 @@
 # ralph
 
-무인 루프 워크플로 artifact (`mechanism: workflows`, `domain: state`, `role: workflow_step`). `compose.yaml` 의 `state.workflows` entry 로 활성.
+무인 self-loop 워크플로 artifact (`mechanism: workflows`, `domain: state`, `role: workflow_step`). `compose.yaml` 의 `state.workflows` entry 로 활성.
 
-## 두 모드 (자동 선택)
+## compose schema
 
-- **모드 A 단일 task**: `ralph.task` 적힘 → `know-how/ralph-task.md` 한 파일.
-- **모드 B stage chain**: `ralph.stages` 적힘 → `know-how/ralph-stages.yaml`.
+```yaml
+state:
+  workflows:
+    - id: ralph
+      task: ./TASK.md         # 작업 명세 (필수)
+      max_iterations: 20      # 최대 반복
+      verify:
+        commands:             # 모두 exit 0 → loop 종료 (성공)
+          - "pytest -x"
+          - "tsc --noEmit"
+      stuck_threshold: 3      # (선택) 같은 path 연속 수정 N회
+      on_stuck: ask_human     # (선택) ask_human | abort
+```
 
-## 검증 (자동 선택)
+## 동작
 
-- **간단 모드**: `ralph.verify` 명세 없음 → `know-how/ralph/verify.sh` 단일 스크립트.
-- **계층 모드**: `ralph.verify` 리스트 → 위에서 아래로 모두 통과해야 done.
+1. invoker 로 agent 호출 (task prompt 기반)
+2. `verify.commands` 순차 실행
+3. 모두 통과 → loop 종료 (성공)
+4. 하나라도 실패 → 다음 iteration (직전 출력을 prompt 에 포함)
+5. `max_iterations` 도달 → 종료 (실패)
+
+`verify.commands` 미지정 시 verify 단계 skip (사용자가 invoker 호출만 반복).
 
 ## Stuck detection
 
-같은 path 연속 수정 카운터. `stuck_threshold` 초과 → `on_stuck` 정책 (`ask_human` | `abort`).
+같은 path 연속 수정 카운터. `stuck_threshold` 초과 시 `on_stuck` 정책 적용.
 
-## Cognitive guard
+## Cognitive guard 와의 관계
 
-ralph 모드에서도 active. `ask_human`은 자동 `abort` fallback.
+ralph 활성 (state.workflows 에 등록) 시 `pre_tool_use` 의 `loop_detection` 가드가 자동 활성 — 같은 path 를 N회 연속 수정하려 하면 `self_correct` 응답.
