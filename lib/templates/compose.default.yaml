@@ -29,7 +29,9 @@ guard:
   hooks:
     - {id: pre_tool_use, role: required_check}
     - {id: pre_tool_use, role: cognitive_guard}
-    - {id: pre_tool_use, role: loop_detection}
+    - {id: pre_tool_use, role: context_gating}
+    - {id: pre_tool_use, role: path_blocklist}
+    # loop_detection 은 state.workflows 에 ralph 등록 시 자동 활성 (compose 명시 불필요)
     - {id: permission_request, role: permission_gate}
     - {id: stop, role: stop_validation}
   policies:
@@ -41,6 +43,15 @@ guard:
     loop_detection:
       consecutive_same_path: 3
       on_loop: self_correct
+    path_blocklist:
+      patterns:
+        - ".env"
+        - ".env.*"
+        - "**/secrets/**"
+        - "**/credentials*"
+        - "**/*.key"
+        - "**/*.pem"
+        - ".git/**"
     stop_validation:
       enabled: false
       on_fail: warn

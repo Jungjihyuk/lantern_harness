@@ -28,9 +28,10 @@ action:
 guard:
   - required_check        # required_context 미읽음 차단
   - cognitive_guard       # 변경 규모 제한 (per_call/per_session)
-  - loop_detection        # doom loop 감지
+  - loop_detection        # doom loop 감지 (workflows 활성 시 자동)
   - stop_validation       # 종료 조건 검증
   - permission_gate       # 도구 권한 검사
+  - path_blocklist        # sensitive path 차단 (.env / secrets / .git 등)
 
 observe:
   - trace_log             # 결정 이벤트 기록

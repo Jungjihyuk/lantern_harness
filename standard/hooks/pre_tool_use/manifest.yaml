@@ -1,12 +1,13 @@
 id: pre_tool_use
 domain: guard
 mechanism: hooks
-purpose: 변경 도구 호출 직전 다중 검사 (required/cognitive/loop)
+purpose: 변경 도구 호출 직전 다중 검사 (required / cognitive / loop / context / path_blocklist)
 roles:
 - required_check
 - cognitive_guard
 - loop_detection
 - context_gating
 - trace_log
+- path_blocklist
 event: pre_tool_use
 entry: ./handler.sh
