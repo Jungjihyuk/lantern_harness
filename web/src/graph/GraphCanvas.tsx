@@ -19,14 +19,12 @@ const EDGE_STYLE = { stroke: '#666', strokeWidth: 1.5 };
 
 export function GraphCanvas() {
   const graph = useComposeStore((s) => s.graph);
-  const loadGraph = useComposeStore((s) => s.loadGraph);
-  const loadValidate = useComposeStore((s) => s.loadValidate);
+  const loadAll = useComposeStore((s) => s.loadAll);
   const selectNode = useComposeStore((s) => s.selectNode);
 
   useEffect(() => {
-    loadGraph();
-    loadValidate();
-  }, [loadGraph, loadValidate]);
+    loadAll();
+  }, [loadAll]);
 
   const rfNodes = useMemo(() => {
     if (!graph) return [];
