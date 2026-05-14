@@ -75,7 +75,7 @@ curl -fsSL https://raw.githubusercontent.com/Jungjihyuk/lantern_harness/main/ins
 | 🪟 | **시각 편집 대시보드** | `harness dashboard` — n8n 스타일 web UI 에서 compose entry CRUD · 노드 drag&drop · 본문 편집 |
 | 📊 | **6 viz** | workflow · subagents · bottleneck · eval · improve · prompts 정적 시각화 (`harness viz <type>`) |
 | 🧪 | **측정·개선 도구** | Eval 회귀 테스트 · Improve 룰 기반 제안 · LLM-as-judge (claude_cli / codex / manual) |
-| 🔌 | **Provider 어댑터** | Claude Code 통합 구체 + Codex/기타 placeholder · 표준 envelope으로 도구 무관 |
+| 🔌 | **Provider 어댑터** | Claude 1차 + Codex 2차 (driver 구체 구현 — config.toml / skills / MCP) · 표준 envelope 으로 도구 무관 |
 | 🌱 | **하네스 자체 진화** | git post-commit으로 CHANGELOG 자동 갱신 · `know-how` → `standard` 승격 (publish 자격 검증) |
 
 ---
@@ -132,7 +132,8 @@ claude                      # 새 세션 열기 (AGENTS.md 자동 주입 + 가�
 - **git** (진화 추적용)
 - **LLM CLI 중 하나 이상**:
   - [`claude`](https://docs.claude.com/claude-code) — 1차 지원
-  - `codex` / 기타 — 어댑터 추가로 확장 가능
+  - `codex` — 2차 지원 (driver 구체 구현 — `~/.codex/config.toml` / skills / MCP 관리. 검증 진행 중)
+  - 기타 — 어댑터 추가로 확장 가능
 
 ### 제거
 
