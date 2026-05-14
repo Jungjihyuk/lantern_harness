@@ -231,6 +231,7 @@ harness dashboard --no-open       # 브라우저 자동 오픈 끄기
 | [`docs/system-essence.md`](docs/system-essence.md) | "왜 이렇게 설계했는가" — 핵심 개념의 일관된 뿌리 |
 | [`docs/provider-adapter.md`](docs/provider-adapter.md) | provider adapter (claude / codex / 기타) 규약과 envelope |
 | [`docs/claude-hook-reference.md`](docs/claude-hook-reference.md) | Claude Hook 시스템 규약·exit code 프로토콜 |
+| [`docs/codex-hook-reference.md`](docs/codex-hook-reference.md) | Codex Hook 시스템 규약 + Claude 와의 비교 + harness adapter 매핑 가이드 |
 | [`docs/dashboard-manual-test.md`](docs/dashboard-manual-test.md) | `harness dashboard` 수동 테스트 시나리오 |
 
 처음 보는 분은 **입문**부터. 자체 완결되어 있어 단일 에이전트는 입문만으로 충분히 운영 가능합니다.
