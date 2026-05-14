@@ -1,11 +1,15 @@
 # Provider Adapter — `harness list / show / disable / enable`
 
-`harness`가 Claude Code·Codex 같은 외부 provider들이 설치한 아티팩트(MCP·skill·plugin)를 **한 곳에서 보고 제어**할 수 있도록 만든 어댑터 레이어.
+`harness` 가 Claude Code · Codex 같은 외부 provider 들이 설치한 아티팩트 (MCP · skill · plugin) 를 **한 곳에서 보고 제어** 할 수 있도록 만든 어댑터 레이어.
 
-- **Phase 1**: read-only 통합 뷰 — `harness list`, `harness show`
-- **Phase 2**: 활성/비활성 토글 — `harness disable`, `harness enable`
-- **Phase 3**: Codex driver 추가 — 두 번째 provider 로 인터페이스 일반성 검증
-- **Phase 4 (예정)**: `harness remove`
+현재 지원:
+- **통합 뷰** — `harness list`, `harness show`
+- **활성 / 비활성 토글** — `harness disable`, `harness enable`
+- **두 provider** — Claude / Codex 둘 다 동일 인터페이스로 제어
+
+향후 후보:
+- `harness remove` — 가장 위험, 백업 정책 필요
+- bundle / package 개념
 
 > 관련 conversation: 5축 책임축(cognition/state/action/guard/observe) × 7 메커니즘 폴더 × standard/know-how 소유축 설계 논의 결과의 첫 실체화. 본 문서는 그 중 **action 도메인의 adapters 메커니즘** 부분에 해당.
 
@@ -137,7 +141,7 @@ ${XDG_DATA_HOME:-~/.local/share}/harness/   # 사용자 데이터, install이 �
   │
   ├──────────────┐
   ▼              ▼
-[claude/driver]  [codex/driver]   ← provider별 구현체 (Phase 3 이후: 둘 다 활성)
+[claude/driver]  [codex/driver]   ← provider 별 구현체 (둘 다 활성)
   │              │
   │              └─read→ ~/.codex/config.toml + ~/.codex/skills/
   │              └─write→ ~/.codex/config.toml (line surgery)
@@ -153,7 +157,7 @@ ${XDG_DATA_HOME:-~/.local/share}/harness/   # 사용자 데이터, install이 �
 
 ## 4. 파일별 상세
 
-### 4.1 `standard/adapters/base.py`
+### 4.1 `lib/adapters/base.py`
 
 추상 인터페이스 + 데이터 모델 + 예외.
 
@@ -191,7 +195,7 @@ class ProviderDriver(ABC):
 - `Item`이 모든 provider의 정규화된 표현
 - `ProviderDriver` ABC가 driver 계약 강제. 메서드 추가 = 본 파일 수정 + 각 driver 갱신
 
-### 4.2 `standard/adapters/registry.py`
+### 4.2 `lib/adapters/registry.py`
 
 driver 동적 발견 + 통합 호출.
 
@@ -324,7 +328,7 @@ disable/enable 시 전체 파일 재생성하지 않고 **해당 섹션 line blo
 - `_write_text_atomic(path, text)` — tmp 작성 후 `os.replace`
 - 모든 list 메서드: 파일/디렉토리 없으면 빈 list 반환 (Codex 미설치 환경 graceful)
 
-### 4.5 `standard/adapters/list.py`
+### 4.5 `lib/adapters/list.py`
 
 argparse 기반 CLI 엔트리.
 
@@ -351,7 +355,7 @@ _LIST_COLUMNS = [
 
 `--provider` choices는 `discover_drivers()` 결과로 동적 채움 — Codex driver 추가되면 `--provider {claude,codex}`로 자동 갱신.
 
-### 4.6 `standard/adapters/show.py`
+### 4.6 `lib/adapters/show.py`
 
 `harness show <name>` 의 CLI 엔트리. list가 표라면 show는 **수직 key:value + (skill의 경우) 본문 일부**로 한 건의 깊은 뷰.
 
@@ -377,7 +381,7 @@ _LIST_COLUMNS = [
 - `1` — not found
 - `2` — disambiguation 필요
 
-### 4.7 `standard/adapters/_mutation.py`
+### 4.7 `lib/adapters/_mutation.py`
 
 disable / enable 공통 CLI 로직. `disable.py` / `enable.py` 가 본 모듈의 `run(verb)` 만 호출.
 
@@ -396,7 +400,7 @@ disable / enable 공통 CLI 로직. `disable.py` / `enable.py` 가 본 모듈의
 - `4` — `ItemNotFound` (provider 상태에서 못 찾음)
 - `5` — 기타 mutation 예외
 
-### 4.8 `standard/adapters/disable.py` / `enable.py`
+### 4.8 `lib/adapters/disable.py` / `enable.py`
 
 각각 `_mutation.run("disable")` / `_mutation.run("enable")` 만 호출하는 얇은 진입점. verb 외 동작은 동일.
 
@@ -434,7 +438,7 @@ case "$cmd" in
 ```
 1. bin/cmd/list.sh
    ├─ harness 내부 섹션 (md / plugin / know-how) 출력
-   └─ python3 ~/.harness/standard/adapters/list.py "$@"
+   └─ python3 ~/.harness/lib/adapters/list.py "$@"
 2. adapters/list.py — argparse 파싱
 3. registry.list_all(kind, provider)
 4. discover_drivers() → adapters/*/driver.py 동적 로드
@@ -578,11 +582,8 @@ harness list --kind plugin --json | jq '.[] | select(.name | contains("ouroboros
 
 | 작업 | 작업량 | 가치 |
 |---|---|---|
-| ~~`harness show <name>` 개별 상세~~ | ~~작음~~ | ✅ Phase 1 완료 |
-| ~~`harness disable/enable <name>`~~ | ~~중간~~ | ✅ Phase 2 완료 |
-| ~~Codex driver~~ | ~~중간~~ | ✅ Phase 3 완료 — 인터페이스 일반성 검증됨 |
 | `harness remove <name>` | 중간 | 가장 위험, 백업 정책 필요 |
-| bundle / package 개념 | 큼 | UX 개선 — "ouroboros 한 번에 끄기" |
+| bundle / package 개념 | 큼 | UX 개선 — 묶음 한 번에 토글 |
 
 ### 7.3 driver 추가 가이드 (Codex 등)
 
@@ -639,7 +640,7 @@ class CodexDriver(ProviderDriver):
 5. **dispatcher 동기 잊지 않기** — verb 추가 시 `bin/harness` whitelist 갱신 필수 (한 번 빠뜨려 트러블 발생함)
 6. **외부 의존 zero, standalone 운영** — PyYAML / tomli 모두 회피, 우리 use case 에 맞춰 자체 파서 작성
 
-### Phase 3 — Codex driver 추가로 검증된 일반성
+### Codex driver 추가로 검증된 일반성
 
 Codex driver 를 추가하면서 **공통 코드(`base.py` / `registry.py` / `_mutation.py` / `list.py` / `show.py`)는 한 줄도 수정하지 않음**. driver 폴더 하나만 추가했고, 모든 통합 명령이 자동으로 새 provider 를 인지·제어. 추상화 누수 없음 = ProviderDriver 인터페이스가 정말 일반적이었다는 강한 증거.
 

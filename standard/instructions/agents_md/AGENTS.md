@@ -1,53 +1,30 @@
-<!--
-================================================================
-AGENTS.md — Standard 표준 md (Prefix 주입)
-
-이 파일은 작업 시작 시 system prompt prefix로 자동 주입됩니다.
-프로젝트는 know-how/AGENTS.md를 만들어 이 파일을 통째 override 가능.
-
-규약:
-1. 4 블록 구조 유지: Required / On-Demand / Trigger → Read / Hard Rules
-2. Required는 1~3개로 절제
-3. Hard Rules는 본문에 직접 명시 (참조 X — prefix 영구 유지)
-4. 구조 위반 시 stop hook이 거부
-
-표준 md 자격 (prefix 들어갈 자격 — 새 md 추가 시 가이드):
-- 항상 적용되어야 하는가
-- 압축되면 손해가 큰가
-- 짧게 표현 가능한가 (또는 요약만으로 효과)
-- 프로젝트 무관 보편적인가
-
-압축 정책:
-- 이 파일에 직접 적힌 텍스트 = system prefix = 압축 안 됨
-- 참조(- path/to/file.md)로 가리킨 문서 본문 = 도구 결과 = 압축 가능
-================================================================
--->
-
 # AGENTS.md
 
-> 작업 시작 전 Required Context를 모두 읽으세요.
-> Required를 읽지 않은 채 코드 변경 금지 (hook이 강제).
+이 안내는 매 응답마다 함께 주어집니다. Lantern Harness 가 프로젝트의 `compose.yaml` 에서 자동으로 합성한 시스템 안내 — 잊지 말고 따라가세요.
 
-## Required Context
-<!-- 시작 시 반드시. 1~3개로 절제. 자기 path 직접 적기. -->
-- 프로젝트 정의: docs/.../프로젝트 정의서.md
-- 강제 컨벤션:  docs/.../강제 컨벤션.md
+## 행동 원칙 (우선순위 순)
 
-## On-Demand Context
-<!-- 필요할 때 lazy. -->
-- 시스템 설계: docs/.../시스템 설계서.md
-- 데이터 명세: docs/.../데이터 명세서.md
-- 학습 노트:   docs/.../12. 기술 문서/
+1. **Hard Rules** — `## Hard Rules` 의 강제 규칙은 *항상* 위. 다른 어떤 것보다 우선한다.
+2. **Required Context** — 변경 도구 (Edit / Write / NotebookEdit / Bash 등) 호출 *전* 에 `## Required Context` 의 모든 문서를 읽는다.
+3. **Conditional Required Context** — 지금 편집하려는 파일이 `## Conditional Required Context` 의 한 항목에 해당하면 (예: `db/database.py` 가 *DB 작업 시 따라야 할 규칙* 에 해당), 그 문서를 먼저 읽고 *그 안의 지침을 따라* 구현한다.
+4. **Suggested Context** — 필요할 때 자율 참고. 
 
-## Trigger → Read
-<!-- 특정 작업을 하기 전 강제로 참고 해야할 문서 매핑. -->
-<!-- PreToolUse  -->
-- DB/스키마 변경 → 데이터 명세 먼저
-- API 인터페이스 → 인터페이스 명세 먼저
-- 권한·서명 변경 → 권한 명세 먼저
+## 자동 가드 (시스템이 도구 호출 직전 차단)
 
-## Hard Rules
-<!-- 직접 명시. 참조 X. 강제력 본체. prefix 영구 유지. -->
-1. Required Context를 읽지 않은 채 코드 변경 금지
-2. Trigger 매칭 시 해당 문서를 먼저 읽고 작업
-3. <know-how 추가 룰>
+- **인지 한계 가드** — 한 번에 너무 큰 변경 (200줄 / 3 파일 초과 등) 시 차단. 의도된 큰 변경은 prompt 에 `@harness allow-large` 마커로 한 번 통과.
+- **Sensitive Path** — `.env`, `secrets/`, `.git/`, 키 / 인증 파일 등 자동 차단. 우회 시도 X.
+
+## 컨텍스트 무게
+
+| 블록 | prefix 에 들어가는 것 | 의미 |
+|---|---|---|
+| **Hard Rules** | 본문 그대로 | 세션 내내 항상 시야에 유지 |
+| **Required / Conditional Required / Suggested Context** | 파일 경로 + 라벨만 | 가볍게 — 실 본문은 필요 시점에 도구로 읽음 |
+
+## 컨텍스트 카탈로그 안내
+
+아래 세 블록은 `compose.yaml` 의 `cognition.context.*` 에서 자동 합성된다:
+
+- `## Required Context` — 작업 시작 전 *반드시* 읽을 문서
+- `## Conditional Required Context` — 작업 대상 파일이 매칭되면 *강제 읽기 + 그 안의 지침 따르기*
+- `## Suggested Context` — 필요 시 자율 참고 (안 봐도 됨)

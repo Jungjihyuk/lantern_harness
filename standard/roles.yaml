@@ -8,15 +8,17 @@
 # 명명 규칙: snake_case, `<동사>_<명사>` 또는 `<명사>_<동사>` 일관.
 
 cognition:
-  - prefix_injection      # 시스템 프롬프트에 텍스트 주입
+  - prefix_injection      # 시스템 프롬프트에 텍스트 주입 (시스템 안내 / 외부 검증 원칙 등)
+  - hard_rule             # 강제 규칙 — render 시 ## Hard Rules 그룹으로 자동 분류
   - context_gating        # required context 읽음 검증
   - rule_reminder         # 행동 규칙 재주입
-  - trigger_match         # 파일 작업 시 추가 컨텍스트 트리거 (구 trigger_read)
+  - trigger_match         # 파일 작업 시 추가 컨텍스트 트리거
   - on_demand_hint        # 자율 참조 카탈로그 노출
 
 state:
   - status_init           # 세션 시작 시 상태 파일 초기화
   - status_track          # Read 도구 호출 추적 → status JSON 갱신
+  - edit_track            # 변경 도구 호출 후 edit_history 갱신 (loop_detection / cognitive_guard 누적의 입력)
   - workflow_step         # 워크플로우 단계 실행 (ralph 등)
   - memory_persist        # 영구 메모리 갱신
 
@@ -28,14 +30,16 @@ action:
 guard:
   - required_check        # required_context 미읽음 차단
   - cognitive_guard       # 변경 규모 제한 (per_call/per_session)
-  - loop_detection        # doom loop 감지
+  - loop_detection        # doom loop 감지 (workflows 활성 시 자동)
   - stop_validation       # 종료 조건 검증
   - permission_gate       # 도구 권한 검사
+  - path_blocklist        # sensitive path 차단 (.env / secrets / .git 등)
 
 observe:
   - trace_log             # 결정 이벤트 기록
   - metric_collect        # 토큰/시간/라인 누적
-  - state_snapshot        # 시스템 상태 덤프
+  - state_snapshot        # 세션 시작 시점의 시스템 hash 기록 (compose/standard/know-how/git)
+  - drift_check           # 이전 세션 snapshot 과 비교, 변경 항목 안내
   - state_diagnose        # 상태 진단
   - eval_verdict          # 평가 verdict 산출
   - view_render           # 시각화/리포트 렌더링

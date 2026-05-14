@@ -1,28 +1,28 @@
 #!/bin/bash
-# pre_tool_use handler (v2 skeleton)
+# pre_tool_use handler — 도구 호출 직전 다중 가드.
 #
-# Lifecycle: 변경성 도구 (Edit/Write/Bash 등) 호출 직전.
-# 책임 (roles):
-#   - required_check     — Required Context 미읽음 차단
-#   - cognitive_guard    — 변경 규모 (per_call / per_session) 제한
-#   - loop_detection     — Doom loop 감지 (같은 path 반복 수정)
-#   - context_gating     — Trigger → Read 매칭 시 추가 컨텍스트 강제
-#   - trace_log          — 결정 이벤트 기록
+# 처리 (deny 우선):
+#   1. path_blocklist  — sensitive path 차단 (모든 도구)
+#   2. required_check  — Required Context 미읽음 (변경 도구만)
+#   3. context_gating  — triggered 매칭 + doc 미읽음
+#   4. cognitive_guard — per_call / per_session 초과 (bypass marker 시 skip)
+#   5. loop_detection  — state.workflows 에 ralph 등록 시 자동 활성
+#   6. trace_log       — 결정 무관 기록
 #
-# stdin envelope:
-#   {"hook_type":"pre_tool_use","session_id":"...","project_root":"...",
-#    "tool_name":"Edit","tool_args":{...}}
+# stdin: 표준 envelope JSON (tool_name + tool_args 포함)
+# stdout: {"decision":"allow|self_correct|hard_stop","reason":"..."}
 #
-# stdout:
-#   {"decision":"allow"}                        (통과)
-#   {"decision":"self_correct","reason":"..."}  (LLM 에게 안내, 재시도 유도)
-#   {"decision":"hard_stop","reason":"..."}     (사용자 개입 요구)
-#
-# TODO: guard.policies 의 cognitive_guard / loop_detection 정책을 compose 에서 읽고,
-#       lib/validator 의 결과 + status JSON 활용해 실제 검증 구현.
+# 실 logic 은 lib/hooks/pre_tool_use.py.
 
 set -euo pipefail
-input="$(cat)"
 
-# placeholder: 일단 통과
-echo '{"decision":"allow"}'
+HARNESS_HOME="${HARNESS_HOME:-$HOME/.harness}"
+
+if [[ -d "$HARNESS_HOME/lib/hooks" ]]; then
+  LIB_ROOT="$HARNESS_HOME"
+else
+  LIB_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+fi
+
+export HARNESS_HOME
+exec env PYTHONPATH="$LIB_ROOT" python3 -m lib.hooks.pre_tool_use

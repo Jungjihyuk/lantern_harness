@@ -1,7 +1,7 @@
-"""Manifest dataclass + parser + validator (v2).
+"""Manifest dataclass + parser + validator.
 
 각 artifact 폴더 안의 manifest.yaml 을 읽어 Manifest dataclass 로 표현.
-schema 는 docs/architecture-v2-schema.md §5 (A-4) 기준.
+schema 는 docs/architecture.md §5 (A-4) 기준.
 
 사용 예:
     from lib.manifest import parse_manifest, validate_manifest

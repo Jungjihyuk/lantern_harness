@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-HARNESS_HOME="$HOME/.harness"
+HARNESS_HOME="${HARNESS_HOME:-$HOME/.harness}"
 PROJECT_ROOT="$(pwd)"
 HARNESS_DIR="$PROJECT_ROOT/.harness"
 
@@ -28,67 +28,17 @@ fi
 #    standard/ symlink 는 v2 에서 불필요 — resolver 가 ~/.harness/standard 직접 발견.
 mkdir -p "$HARNESS_DIR"/{know-how,runtime,evolution}
 
-# 2. compose.yaml (v2 default — SSOT)
-cat > "$HARNESS_DIR/compose.yaml" <<'YAML'
-# compose.yaml v2 — 5 도메인 활성화 매핑.
-# 모든 entry 는 id 로 artifact 참조. `harness validate` 가 일관성 검증.
-# AGENTS.md 는 매 세션 자동 생성 (cognition.instructions + rules 기반).
-
-version: 2
-
-cognition:
-  instructions:
-    - agents_md                  # standard 의 시스템 prefix 텍스트
-  context:
-    required: []                 # 사용자 채우기. 예: [{id: project_readme, src_path: README.md}]
-    suggested: []                # 필요 시 자율 참조
-    triggered: []                # 예: [{id: api_spec, src_path: docs/api-spec.md, when: "src/api/**"}]
-  rules: []                      # 행동 규칙 artifact id 리스트
-  hooks:
-    - {id: session_start, role: prefix_injection}
-    - {id: pre_tool_use, role: context_gating}
-
-state:
-  hooks:
-    - {id: session_start, role: status_init}
-    - {id: post_tool_use, role: status_track}
-
-action:
-  adapters:
-    - claude_adapter             # 필요 시 codex_adapter 추가
-
-guard:
-  hooks:
-    - {id: pre_tool_use, role: required_check}
-    - {id: pre_tool_use, role: cognitive_guard}
-    - {id: pre_tool_use, role: loop_detection}
-    - {id: permission_request, role: permission_gate}
-    - {id: stop, role: stop_validation}
-  policies:
-    cognitive_guard:
-      per_call: {max_diff_lines: 200, max_new_files: 3}
-      per_session: {max_changed_files: 10, max_diff_lines: 1000}
-      on_breach: ask_human
-      bypass_marker: "@harness allow-large"
-    loop_detection:
-      consecutive_same_path: 3
-      on_loop: self_correct
-    stop_validation:
-      enabled: false
-      on_fail: warn
-      checks: []                  # 예: [{command: "pytest -x"}, {command: "tsc --noEmit"}]
-
-observe:
-  hooks:
-    - {id: session_start, role: trace_log}
-    - {id: pre_tool_use, role: trace_log}
-    - {id: post_tool_use, role: trace_log}
-    - {id: post_tool_use, role: metric_collect}
-    - {id: post_tool_use_failure, role: trace_log}
-    - {id: post_tool_use_failure, role: eval_verdict}
-    - {id: post_tool_batch, role: metric_collect}
-    - {id: stop, role: trace_log}
-YAML
+# 2. compose.yaml (default template — SSOT)
+COMPOSE_TEMPLATE="$HARNESS_HOME/lib/templates/compose.default.yaml"
+if [[ ! -f "$COMPOSE_TEMPLATE" ]]; then
+  # dev repo fallback (install.sh 안 거친 경우)
+  COMPOSE_TEMPLATE="$(cd "$(dirname "$0")/../.." && pwd)/lib/templates/compose.default.yaml"
+fi
+if [[ ! -f "$COMPOSE_TEMPLATE" ]]; then
+  echo "Error: compose default template 못 찾음 ($COMPOSE_TEMPLATE)" >&2
+  exit 1
+fi
+cp "$COMPOSE_TEMPLATE" "$HARNESS_DIR/compose.yaml"
 
 # 4. know-how/ 빈 폴더만 (AGENTS.md는 자동 생성 — 수동 override 원하면 직접 만들기)
 # 단, 처음 사용자에게 안내용 placeholder 만 두기:

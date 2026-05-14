@@ -1,5 +1,5 @@
 
-[My Harness System](My Harness System.md)에서 5장(5-Hook 시스템)이 참조하는 외부 레퍼런스. Claude Code가 hook 시스템에서 **무엇을 기대하는지**, harness가 그 안에서 **무엇을 어떻게 골랐는지**의 detail.
+[입문 §10](01-입문.md#10-hook-시스템) 의 hook 시스템이 참조하는 외부 레퍼런스. Claude Code 가 hook 시스템에서 **무엇을 기대하는지**, harness 가 그 안에서 **무엇을 어떻게 골랐는지** 의 detail.
 
 > 공식 문서: [claude hook](https://code.claude.com/docs/ko/hooks)
 
@@ -144,7 +144,7 @@ Required Context 미읽음 같은 **부드러운 거부**는 LLM이 알아서 �
 [Claude의 규약]                          [Harness 매핑]
 ─────────────────────────                ──────────────
 exit 0 + stdout 없음           →          allow
-exit 2 + stderr 메시지         →          self_correct  (Required·trigger·cognitive·loop의 부드러운 거부)
+exit 2 + stderr 메시지         →          self_correct  (Required·Conditional Required·cognitive·loop 의 부드러운 거부)
 JSON {"continue": false}       →          hard_stop     (severity 높은 거부)
 JSON {permissionDecision}      →          (사용 안 함 — exit code로 충분)
 ```

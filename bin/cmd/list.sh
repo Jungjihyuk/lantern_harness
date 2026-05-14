@@ -75,11 +75,12 @@ if [[ $show_harness_section -eq 1 ]]; then
 fi
 
 # === Provider 통합 아티팩트 (Claude Code, ...) ===
-adapters_list="$HARNESS_HOME/standard/adapters/list.py"
+adapters_list="$HARNESS_HOME/lib/adapters/list.py"
 if [[ -f "$adapters_list" ]] && command -v python3 >/dev/null 2>&1; then
   if [[ $show_harness_section -eq 1 ]]; then
     echo ""
     echo "PROVIDERS:"
   fi
-  python3 "$adapters_list" "$@"
+  export HARNESS_HOME
+  env PYTHONPATH="$HARNESS_HOME" python3 -m lib.adapters.list "$@"
 fi

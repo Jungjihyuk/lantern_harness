@@ -65,3 +65,6 @@ runtime/
 !.claude/skills/**
 .claude/settings.local.json
 .claude/**/*.bak.*
+
+# harness runtime (auto-generated)
+.harness/runtime/

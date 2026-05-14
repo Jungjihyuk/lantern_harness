@@ -1,6 +1,6 @@
-# v2 sample — `harness validate` e2e 검증용
+# sample — `harness validate` e2e 검증용
 
-architecture v2 schema (`docs/architecture-v2-schema.md`) 가 실제로 작동하는지
+architecture schema (`docs/architecture.md`) 가 실제로 작동하는지
 검증하기 위한 최소 샘플 자산.
 
 ## 구조
@@ -16,11 +16,11 @@ test_data/v2_sample/
 │       ├── manifest.yaml
 │       └── handler.sh                           # (검증 시연용 placeholder)
 └── .harness/
-    └── compose.yaml                             # v2 schema 의 활용 예
+    └── compose.yaml                             # schema 활용 예
 ```
 
 샘플 내용:
-- 1 instruction (`agents_md`) → cognition.instructions 에 등록
+- 1 prefix entry (`agents_md`) → cognition.prefix 에 등록
 - 1 hook (`pre_tool_use`) → guard.hooks 에 3 entries + observe.hooks 1 entry (N:N)
 - guard.policies (cognitive_guard, loop_detection) 포함
 
@@ -38,9 +38,9 @@ cd test_data/v2_sample
 
 ## 목적
 
-- Phase C 의 validate CLI 가 정말 동작하는지 확인
+- validate CLI 가 정말 동작하는지 확인
 - 향후 schema 변경 시 회귀 테스트 reference
-- 새 contributor 가 v2 schema 를 빠르게 이해할 수 있는 살아있는 예시
+- 새 contributor 가 schema 를 빠르게 이해할 수 있는 살아있는 예시
 
 ## 주의
 

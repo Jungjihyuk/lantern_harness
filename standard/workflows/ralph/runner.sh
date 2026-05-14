@@ -1,17 +1,20 @@
 #!/bin/bash
-# Ralph runner v1 — invoker로 agent 호출 + verify + stuck detection.
+# Ralph runner — invoker 로 agent 호출 + verify (성공 시 loop 탈출).
 #
 # 사용:
 #   ralph/runner.sh <project_root> [--invoker=<name>]
 # 또는 (권장):
 #   harness ralph start [--invoker=<name>]
 #
-# compose.yaml의 ralph 섹션 읽어 동작:
-#   ralph.task           — single mode 작업 명세 path
-#   ralph.stages         — chain mode 시퀀스 (미구현 v1)
-#   ralph.max_iterations — 최대 반복 (default 20)
-#   ralph.stuck_threshold
-#   ralph.on_stuck
+# compose.yaml schema (state.workflows[id=ralph]):
+#   task            — 작업 명세 path (예: ./TASK.md)
+#   max_iterations  — 최대 반복 (default 20)
+#   verify:
+#     commands:     — shell command 인라인 list. 모두 exit 0 → loop 종료 (성공)
+#       - "pytest -x"
+#       - "tsc --noEmit"
+#   stuck_threshold — (선택) 같은 path N회 연속 수정 시 trigger
+#   on_stuck        — (선택) ask_human | abort
 
 set -uo pipefail
 
@@ -27,8 +30,9 @@ for arg in "$@"; do
 done
 
 PROJECT_ROOT="$(cd "$PROJECT_ROOT" && pwd)"
-HARNESS_HOME="$HOME/.harness"
+HARNESS_HOME="${HARNESS_HOME:-$HOME/.harness}"
 RALPH_DIR="$HARNESS_HOME/standard/workflows/ralph"
+[[ -d "$RALPH_DIR" ]] || RALPH_DIR="$(cd "$(dirname "$0")" && pwd)"
 ACTIVE="$PROJECT_ROOT/.harness/compose.yaml"
 STATE="$RALPH_DIR/lib/state.py"
 
@@ -46,29 +50,25 @@ if [[ -f "$PROJECT_ROOT/.harness/runtime/ralph/active.lock" ]]; then
   exit 1
 fi
 
-# compose.yaml에서 ralph 설정 추출
+# compose.yaml 의 state.workflows[id=ralph] 에서 설정 추출
 get_ralph() {
   python3 -c "
 import yaml
 cfg = yaml.safe_load(open('$ACTIVE')) or {}
-r = cfg.get('ralph') or {}
+workflows = (cfg.get('state') or {}).get('workflows') or []
+r = next((w for w in workflows if isinstance(w, dict) and w.get('id') == 'ralph'), {})
 v = r.get('$1', '$2')
 print(v if v is not None else '')
 "
 }
 
 TASK="$(get_ralph task '')"
-STAGES="$(get_ralph stages '')"
 MAX_ITER="$(get_ralph max_iterations 20)"
 STUCK_THRESHOLD="$(get_ralph stuck_threshold 3)"
 ON_STUCK="$(get_ralph on_stuck ask_human)"
 
-if [[ -n "$STAGES" ]]; then
-  echo "Note: stage chain 모드는 v1에 미구현. single task 모드만 지원." >&2
-fi
-
 if [[ -z "$TASK" ]]; then
-  echo "Error: compose.yaml의 ralph.task 없음" >&2
+  echo "Error: compose.yaml 의 state.workflows[id=ralph].task 없음" >&2
   exit 1
 fi
 
@@ -109,36 +109,27 @@ on_exit() {
 }
 trap on_exit EXIT INT
 
-# Verify 실행 (간단 모드)
+# Verify 실행 — state.workflows[id=ralph].verify.commands 모두 exit 0 시 success.
+# commands 미지정 시 default skip (항상 pass).
 run_verify() {
   local v_out="$1"
-  if grep -q "^  verify:" "$ACTIVE"; then
-    # 계층 모드 (v1: command만 지원)
-    python3 -c "
+  python3 -c "
 import yaml, subprocess, sys
-cfg = yaml.safe_load(open('$ACTIVE'))
-checks = (cfg.get('ralph') or {}).get('verify') or []
-for c in checks:
-    if not isinstance(c, dict): continue
-    if 'command' in c:
-        r = subprocess.run(c['command'], shell=True, cwd='$PROJECT_ROOT', capture_output=True, text=True)
-        sys.stdout.write(r.stdout); sys.stderr.write(r.stderr)
-        if r.returncode != 0: sys.exit(r.returncode)
-    elif 'script' in c:
-        s = '$PROJECT_ROOT/' + c['script'].lstrip('./')
-        r = subprocess.run(['bash', s], cwd='$PROJECT_ROOT', capture_output=True, text=True)
-        sys.stdout.write(r.stdout); sys.stderr.write(r.stderr)
-        if r.returncode != 0: sys.exit(r.returncode)
+cfg = yaml.safe_load(open('$ACTIVE')) or {}
+workflows = (cfg.get('state') or {}).get('workflows') or []
+r = next((w for w in workflows if isinstance(w, dict) and w.get('id') == 'ralph'), {})
+verify = r.get('verify') or {}
+commands = verify.get('commands') or []
+if not commands:
+    sys.exit(0)
+for cmd in commands:
+    if not isinstance(cmd, str):
+        continue
+    res = subprocess.run(cmd, shell=True, cwd='$PROJECT_ROOT', capture_output=True, text=True)
+    sys.stdout.write(res.stdout); sys.stderr.write(res.stderr)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
 " > "$v_out" 2>&1
-  else
-    # 간단 모드
-    local v="$PROJECT_ROOT/.harness/know-how/ralph/verify.sh"
-    if [[ -x "$v" ]]; then
-      bash "$v" > "$v_out" 2>&1
-    else
-      bash "$RALPH_DIR/verify.sh" > "$v_out" 2>&1
-    fi
-  fi
   return $?
 }
 

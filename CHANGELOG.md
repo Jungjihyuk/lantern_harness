@@ -22,7 +22,7 @@ the harness's own evolution tracking philosophy.
 - 6 viz 렌더러 + 라이브 Dashboard (SSE + 인터랙티브 편집)
 - Improve (룰 기반 제안)
 - LLM-as-judge (3 backend: claude_cli / codex / manual)
-- Provider 어댑터 (Claude 구체 + codex/omo placeholder)
+- Provider 어댑터 (Claude 구체 + codex placeholder)
 - Evolution 자동 추적 (post-commit + CHANGELOG)
 - Publish 자격 검증 (4 기준)
 - 16 CLI 명령

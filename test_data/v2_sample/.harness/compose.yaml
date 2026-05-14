@@ -1,7 +1,7 @@
 version: 2
 
 cognition:
-  instructions:
+  prefix:
     - agents_md
 
 guard:

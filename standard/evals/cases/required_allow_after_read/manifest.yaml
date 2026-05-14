@@ -1,0 +1,7 @@
+id: required_allow_after_read
+domain: observe
+mechanism: evals
+purpose: Required Context Read 후 Edit 통과 (allow)
+roles:
+- eval_verdict
+entry: ./case.yaml
