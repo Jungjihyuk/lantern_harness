@@ -74,6 +74,24 @@ body {
   font-size: 12px;
 }
 
+.code-textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 8px;
+  resize: vertical;
+  background: #fafafa;
+  color: #111;
+}
+
+.file-row.active {
+  background: #eef2ff;
+  border-left: 2px solid #3b82f6;
+  padding-left: 6px;
+}
+
 .inspector-empty { color: #999; padding: 24px; }
 .inspector-pane h2 { font-size: 14px; margin: 0 0 8px; }
 .inspector-pane h3 { font-size: 12px; color: #666; margin: 16px 0 4px; text-transform: uppercase; letter-spacing: .04em; }

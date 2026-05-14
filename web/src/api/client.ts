@@ -100,6 +100,12 @@ export interface EntryUpdateRequest {
   clear_role?: boolean;
 }
 
+export interface EntryMoveRequest {
+  new_domain?: string;
+  new_section?: string;
+  after_index?: number;
+}
+
 async function getJSON<T>(path: string): Promise<T> {
   const r = await fetch(path);
   if (!r.ok) {
@@ -150,4 +156,28 @@ export const api = {
     sendJSON<MutationResponse>('PATCH', `/api/compose/entries/${index}`, req),
   deleteEntry: (index: number) =>
     sendJSON<MutationResponse>('DELETE', `/api/compose/entries/${index}`),
+
+  // mutations (P3)
+  moveEntry:   (index: number, req: EntryMoveRequest) =>
+    sendJSON<MutationResponse>('POST', `/api/compose/entries/${index}/move`, req),
+  writeArtifactFile: async (id: string, path: string, content: string) => {
+    const r = await fetch(
+      `/api/artifacts/${encodeURIComponent(id)}/files?path=${encodeURIComponent(path)}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      },
+    );
+    if (!r.ok) {
+      let detail = `${r.status}`;
+      try { detail = (await r.json()).detail ?? detail; } catch {}
+      throw new Error(`PUT file: ${detail}`);
+    }
+    return r.json();
+  },
+  writeManifest: (id: string, manifest: Record<string, unknown>) =>
+    sendJSON<ArtifactDetailDTO>('PUT', `/api/artifacts/${encodeURIComponent(id)}`, { manifest }),
+  moveArtifact: (id: string, to: 'standard' | 'know-how') =>
+    sendJSON<ArtifactDetailDTO>('POST', `/api/artifacts/${encodeURIComponent(id)}/move`, { to }),
 };

@@ -117,6 +117,25 @@ class EntryUpdateRequest(BaseModel):
     clear_role: bool = False
 
 
+class EntryMoveRequest(BaseModel):
+    """drag&drop 결과 — domain / section / after_index 중 변경할 것만 지정."""
+    new_domain: Optional[str] = None
+    new_section: Optional[str] = None
+    after_index: Optional[int] = None
+
+
+class FileWriteRequest(BaseModel):
+    content: str
+
+
+class ManifestWriteRequest(BaseModel):
+    manifest: dict
+
+
+class ArtifactMoveRequest(BaseModel):
+    to: str                        # "standard" | "know-how"
+
+
 class MutationResponse(BaseModel):
     """모든 mutation 응답: 새 compose + validate 결과 임베드."""
     compose: ComposeDTO
