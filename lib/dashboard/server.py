@@ -1,7 +1,7 @@
 """FastAPI app + uvicorn 부트스트랩.
 
 사용:
-    python3 -m lib.dashboard.server [--port 8765] [--no-open]
+    python3 -m lib.dashboard.server [--port 8766] [--no-open]
 
 `bin/cmd/dashboard.sh` 가 호출.
 
@@ -110,7 +110,7 @@ npm run build       # web/dist → lib/dashboard/static 로 복사</pre>
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="harness dashboard server")
-    ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--port", type=int, default=8766)
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--no-open", action="store_true", help="브라우저 자동 오픈 안 함")
     ap.add_argument("--reload", action="store_true", help="dev: 코드 변경 시 자동 reload")
