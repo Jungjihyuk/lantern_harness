@@ -6,5 +6,6 @@ roles:
   - trace_log
   - metric_collect
   - status_track
+  - edit_track
 event: post_tool_use
 entry: ./handler.sh
