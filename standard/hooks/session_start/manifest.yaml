@@ -1,10 +1,12 @@
 id: session_start
 domain: cognition
 mechanism: hooks
-purpose: '세션 시작: prefix 주입 + 상태 초기화 + trace 기록'
+purpose: '세션 시작: prefix 주입 + 상태 초기화 + trace + snapshot + drift 안내'
 roles:
 - prefix_injection
 - status_init
 - trace_log
+- state_snapshot
+- drift_check
 event: session_start
 entry: ./handler.sh

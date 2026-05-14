@@ -1,9 +1,11 @@
-"""session_start hook — 세션 시작 시 AGENTS.md 합성 + state 초기화 + trace.
+"""session_start hook — 세션 시작 시 AGENTS.md 합성 + state 초기화 + trace + snapshot + drift.
 
 책임 (manifest.yaml 의 roles):
   - prefix_injection: compose 의 cognition entries 를 모아 runtime/AGENTS.resolved.md 생성
   - status_init:      runtime/sessions/<id>/ 의 상태 파일 초기화
   - trace_log:        session_start 이벤트 trace 기록
+  - state_snapshot:   세션 시작 시점의 시스템 hash (compose / standard / know-how / git) 기록
+  - drift_check:      이전 세션 snapshot 과 비교, 변경 항목 trace 에 안내
 
 stdin envelope:
   {"hook_type": "session_start", "session_id": "...", "project_root": "...", ...}
@@ -12,7 +14,10 @@ stdout: {"decision": "allow"}
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -154,6 +159,104 @@ def init_session_state(project_root: Path, session_id: str, compose: Compose) ->
     (sess_dir / "prompts.jsonl").touch()
 
 
+# ─────────────────────── state_snapshot / drift_check ───────────────────────
+
+def _max_mtime(root: Path) -> float:
+    """root 아래 모든 file 의 최대 mtime. 없으면 0."""
+    if not root.exists():
+        return 0.0
+    return max(
+        (p.stat().st_mtime for p in root.rglob("*") if p.is_file()),
+        default=0.0,
+    )
+
+
+def write_snapshot(project_root: Path, session_id: str) -> dict:
+    """현재 시점의 시스템 hash 를 sessions/<id>/snapshot.json 에 기록. 결과 dict 반환."""
+    snap: dict = {"timestamp": utc_now()}
+
+    # compose.yaml SHA256 (short)
+    compose_path = project_root / ".harness" / "compose.yaml"
+    if compose_path.exists():
+        snap["compose_sha"] = hashlib.sha256(compose_path.read_bytes()).hexdigest()[:16]
+
+    # standard / know-how 최근 변경 mtime
+    harness_home = Path(os.environ.get("HARNESS_HOME", Path.home() / ".harness"))
+    standard_root = harness_home / "standard"
+    if not standard_root.exists():
+        dev = Path(__file__).resolve().parent.parent.parent / "standard"
+        if dev.exists():
+            standard_root = dev
+    snap["standard_mtime"] = _max_mtime(standard_root)
+
+    kh_root = project_root / ".harness" / "know-how"
+    snap["know_how_mtime"] = _max_mtime(kh_root)
+
+    # git anchor
+    try:
+        r = subprocess.run(
+            ["git", "-C", str(project_root), "rev-parse", "HEAD"],
+            capture_output=True, text=True, timeout=2, check=False,
+        )
+        if r.returncode == 0:
+            snap["git_head"] = r.stdout.strip()
+        r = subprocess.run(
+            ["git", "-C", str(project_root), "status", "--porcelain"],
+            capture_output=True, text=True, timeout=2, check=False,
+        )
+        if r.returncode == 0:
+            lines = r.stdout.strip().splitlines()
+            snap["git_dirty"] = bool(lines)
+            if lines:
+                snap["git_diff_summary"] = "; ".join(lines[:5]) + (" ..." if len(lines) > 5 else "")
+    except Exception:
+        pass
+
+    sess_dir = project_root / ".harness" / "runtime" / "sessions" / session_id
+    sess_dir.mkdir(parents=True, exist_ok=True)
+    (sess_dir / "snapshot.json").write_text(
+        json.dumps(snap, indent=2, ensure_ascii=False)
+    )
+    return snap
+
+
+def find_previous_snapshot(project_root: Path, current_session_id: str):
+    """이전 세션 중 가장 최근 snapshot.json 반환 (없으면 None)."""
+    sessions_dir = project_root / ".harness" / "runtime" / "sessions"
+    if not sessions_dir.exists():
+        return None
+    candidates = []
+    for sess in sessions_dir.iterdir():
+        if not sess.is_dir() or sess.name == current_session_id:
+            continue
+        snap_file = sess / "snapshot.json"
+        if snap_file.exists():
+            candidates.append((snap_file.stat().st_mtime, snap_file))
+    if not candidates:
+        return None
+    candidates.sort(reverse=True)
+    try:
+        return json.loads(candidates[0][1].read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def diff_snapshots(prev: dict, curr: dict) -> list[str]:
+    """두 snapshot 비교, 변경 항목 list 반환."""
+    changes = []
+    if prev.get("compose_sha") != curr.get("compose_sha"):
+        changes.append("compose.yaml")
+    if prev.get("standard_mtime") != curr.get("standard_mtime"):
+        changes.append("standard/")
+    if prev.get("know_how_mtime") != curr.get("know_how_mtime"):
+        changes.append("know-how/")
+    p_head = (prev.get("git_head") or "")[:7]
+    c_head = (curr.get("git_head") or "")[:7]
+    if p_head != c_head:
+        changes.append(f"git HEAD ({p_head or 'none'} → {c_head or 'none'})")
+    return changes
+
+
 def main() -> int:
     envelope = read_envelope()
     session_id = envelope.get("session_id") or "unknown"
@@ -192,6 +295,30 @@ def main() -> int:
                 "hook": HOOK_ID,
                 "session_id": session_id,
             })
+        except Exception:
+            pass
+
+    # role: state_snapshot — 현재 시점 hash 기록 (drift_check 가 활성이면 자동 선행)
+    curr_snap = None
+    if "state_snapshot" in roles or "drift_check" in roles:
+        try:
+            curr_snap = write_snapshot(project_root, session_id)
+        except Exception:
+            pass
+
+    # role: drift_check — 이전 세션 snapshot 과 비교, 변경 항목 trace
+    if "drift_check" in roles and curr_snap is not None:
+        try:
+            prev = find_previous_snapshot(project_root, session_id)
+            if prev is not None:
+                changes = diff_snapshots(prev, curr_snap)
+                if changes:
+                    append_trace(project_root, session_id, {
+                        "hook": HOOK_ID,
+                        "drift": True,
+                        "changed": changes,
+                        "from_timestamp": prev.get("timestamp"),
+                    })
         except Exception:
             pass
 

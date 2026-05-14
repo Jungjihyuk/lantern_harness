@@ -60,6 +60,8 @@ guard:
 observe:
   hooks:
     - {id: session_start, role: trace_log}
+    - {id: session_start, role: state_snapshot}      # 세션 시작 시점의 시스템 hash 기록
+    - {id: session_start, role: drift_check}         # 이전 세션 대비 변경 항목 안내
     - {id: pre_tool_use, role: trace_log}
     - {id: post_tool_use, role: trace_log}
     - {id: post_tool_use, role: metric_collect}
