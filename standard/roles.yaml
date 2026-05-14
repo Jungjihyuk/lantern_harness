@@ -8,10 +8,11 @@
 # 명명 규칙: snake_case, `<동사>_<명사>` 또는 `<명사>_<동사>` 일관.
 
 cognition:
-  - prefix_injection      # 시스템 프롬프트에 텍스트 주입
+  - prefix_injection      # 시스템 프롬프트에 텍스트 주입 (시스템 안내 / 외부 검증 원칙 등)
+  - hard_rule             # 강제 규칙 — render 시 ## Hard Rules 그룹으로 자동 분류
   - context_gating        # required context 읽음 검증
   - rule_reminder         # 행동 규칙 재주입
-  - trigger_match         # 파일 작업 시 추가 컨텍스트 트리거 (구 trigger_read)
+  - trigger_match         # 파일 작업 시 추가 컨텍스트 트리거
   - on_demand_hint        # 자율 참조 카탈로그 노출
 
 state:

@@ -101,11 +101,10 @@ Claude/Codex 의 skill·MCP·plugin 은 harness 가 소유 X. 원본 위치 그�
 version: 2
 
 cognition:
-  instructions: [agents_md]           # 텍스트 prefix
-  context:
-    required:  [{id: project_readme}] # 시작 시 필독
+  prefix: [agents_md, rule_01, rule_02]   # 본문 prefix (시스템 안내 / 외부 검증 / Hard Rules — manifest role 로 분류)
+  context:                                # path 메타 — 본문은 lazy
+    required:  [{id: project_readme}]     # 시작 시 필독
     triggered: [{id: api_spec, when: "src/api/**"}]
-  rules: [rule_01, rule_02]
   hooks:
     - {id: session_start, role: prefix_injection}
 

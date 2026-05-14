@@ -26,9 +26,12 @@ from lib.manifest import DOMAINS
 
 
 # 도메인 안에서 entry-리스트를 가질 수 있는 표준 키들 (참고용 — 실제 파싱은 모든 list-of-string|dict 를 받음)
+#
+# cognition.prefix:  매 응답 prefix 본문 — 시스템 안내 / 외부 검증 자산 / Hard Rules 모두 한 키.
+#                    Hard Rules 분류는 manifest 의 roles 에 `hard_rule` 포함 여부로 자동 결정.
+# cognition.context.{required,triggered,suggested}: path 메타 카탈로그 (본문 lazy)
 ENTRY_SECTIONS = (
-    "instructions",
-    "rules",
+    "prefix",
     "hooks",
     "workflows",
     "tools",

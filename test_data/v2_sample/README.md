@@ -20,7 +20,7 @@ test_data/v2_sample/
 ```
 
 샘플 내용:
-- 1 instruction (`agents_md`) → cognition.instructions 에 등록
+- 1 prefix entry (`agents_md`) → cognition.prefix 에 등록
 - 1 hook (`pre_tool_use`) → guard.hooks 에 3 entries + observe.hooks 1 entry (N:N)
 - guard.policies (cognitive_guard, loop_detection) 포함
 

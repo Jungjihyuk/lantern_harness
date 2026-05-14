@@ -88,29 +88,22 @@ def main() -> int:
     resolver = Resolver(standard_root=standard_root, know_how_root=know_how_root)
 
     cats = {
-        "cognition.instructions": [],            # [(id, tokens)]
+        "cognition.prefix": [],                  # [(id, tokens)] — 시스템 안내 / 외부 검증 / Hard Rules 통합
         "cognition.context.required": [],
         "cognition.context.triggered": [],
         "cognition.context.suggested": "lazy",
-        "cognition.rules": [],
     }
 
     for entry in compose.entries:
         if entry.domain != "cognition":
             continue
         section = entry.section
-        if section == "instructions":
+        if section == "prefix":
             try:
                 body = read_entry_body(resolver.resolve(entry.id))
             except (IdNotFound, IdConflict):
                 body = ""
-            cats["cognition.instructions"].append((entry.id, estimate_tokens(body)))
-        elif section == "rules":
-            try:
-                body = read_entry_body(resolver.resolve(entry.id))
-            except (IdNotFound, IdConflict):
-                body = ""
-            cats["cognition.rules"].append((entry.id, estimate_tokens(body)))
+            cats["cognition.prefix"].append((entry.id, estimate_tokens(body)))
         elif section == "context.required":
             body = read_context_src(entry.extras.get("src_path", ""), project_root)
             cats["cognition.context.required"].append((entry.id, estimate_tokens(body)))
@@ -126,11 +119,10 @@ def main() -> int:
 
     total = 0
     for name, items, note in [
-        ("cognition.instructions", cats["cognition.instructions"], "← 본문 직접 (압축 X)"),
+        ("cognition.prefix", cats["cognition.prefix"], "← 본문 직접 (시스템 안내 / 외부 검증 / Hard Rules)"),
         ("cognition.context.required", cats["cognition.context.required"], ""),
         ("cognition.context.triggered", cats["cognition.context.triggered"], "← 매칭된 것만 합성"),
         ("cognition.context.suggested", cats["cognition.context.suggested"], ""),
-        ("cognition.rules", cats["cognition.rules"], ""),
     ]:
         if isinstance(items, str):  # lazy marker
             print(f"[{name:<32}] ({items} — 합성 X)")

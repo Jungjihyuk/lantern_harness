@@ -294,9 +294,12 @@ observe:
 version: 2
 
 cognition:
-  instructions:
+  prefix:                         # 본문이 매 응답 prefix 에 박힘 (시스템 안내 / 외부 검증 / Hard Rules)
     - AGENTS_base
-  context:
+    # - principles_karpathy        # 외부 검증 자산 (선택)
+    - rule_no_silent_failure       # Hard Rules (manifest role: hard_rule)
+    - rule_korean_domain_terms     # Hard Rules
+  context:                        # path 메타 — 본문은 lazy
     required:
       - project_readme
       - design_doc
@@ -305,9 +308,6 @@ cognition:
     suggested:
       - architecture_overview
       - runbook
-  rules:
-    - rule_no_silent_failure
-    - rule_korean_domain_terms
   hooks:
     - {id: session_start_prefix, role: prefix_injection}
     - {id: pre_tool_use_required, role: context_gating}

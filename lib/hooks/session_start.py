@@ -40,21 +40,30 @@ def render_agents_md(compose: Compose, resolver: Resolver, project_root: Path) -
     parts.append("> 매 세션 자동 생성 — compose.yaml 의 cognition 도메인에서 derived.")
     parts.append("")
 
-    # 1. instructions — 본문 직접 누적
-    instr_bodies: list[str] = []
+    # 1. prefix — 본문 직접 누적 (instructions / 외부 검증 / Hard Rules 통합)
+    #    manifest 의 roles 에 'hard_rule' 포함되면 Hard Rules 그룹으로 분리.
+    general_bodies: list[str] = []
+    hard_rule_bodies: list[str] = []
     for e in compose.entries:
-        if e.domain != "cognition" or e.section != "instructions":
+        if e.domain != "cognition" or e.section != "prefix":
             continue
         try:
             manifest_path = resolver.resolve(e.id)
             m = parse_manifest(manifest_path)
             body_path = manifest_path.parent / m.entry
-            if body_path.exists():
-                instr_bodies.append(body_path.read_text(encoding="utf-8", errors="replace").strip())
+            if not body_path.exists():
+                continue
+            body = body_path.read_text(encoding="utf-8", errors="replace").strip()
         except Exception:
             continue
-    if instr_bodies:
-        parts.append("\n\n".join(instr_bodies))
+        # role 에 'hard_rule' 있거나 entry 의 role 이 'hard_rule' 이면 Hard Rules 그룹
+        is_hard = "hard_rule" in (m.roles or []) or e.role == "hard_rule"
+        if is_hard:
+            hard_rule_bodies.append(body)
+        else:
+            general_bodies.append(body)
+    if general_bodies:
+        parts.append("\n\n".join(general_bodies))
         parts.append("")
 
     # 2. context.required
@@ -97,23 +106,11 @@ def render_agents_md(compose: Compose, resolver: Resolver, project_root: Path) -
             parts.append(f"- {label}: `{src}`")
         parts.append("")
 
-    # 5. rules — 본문 직접 누적
-    rule_bodies: list[str] = []
-    for e in compose.entries:
-        if e.domain != "cognition" or e.section != "rules":
-            continue
-        try:
-            manifest_path = resolver.resolve(e.id)
-            m = parse_manifest(manifest_path)
-            body_path = manifest_path.parent / m.entry
-            if body_path.exists():
-                rule_bodies.append(body_path.read_text(encoding="utf-8", errors="replace").strip())
-        except Exception:
-            continue
-    if rule_bodies:
+    # 5. Hard Rules (prefix 안의 hard_rule role artifact)
+    if hard_rule_bodies:
         parts.append("## Hard Rules")
         parts.append("")
-        parts.append("\n\n".join(rule_bodies))
+        parts.append("\n\n".join(hard_rule_bodies))
         parts.append("")
 
     return "\n".join(parts)

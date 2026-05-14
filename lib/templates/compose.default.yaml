@@ -5,16 +5,17 @@
 version: 2
 
 cognition:
-  instructions:
-    - agents_md                  # standard 의 시스템 prefix 텍스트
-  context:
-    required: []                 # 사용자 채우기. 예: [{id: project_readme, src_path: README.md}]
-    suggested: []                # 필요 시 자율 참조
-    triggered: []                # 예: [{id: api_spec, src_path: docs/api-spec.md, when: "src/api/**"}]
-  rules: []                      # 행동 규칙 artifact id 리스트
+  prefix:                        # 본문이 매 응답 prefix 에 박힘 (시스템 안내 / 외부 검증 / Hard Rules)
+    - agents_md                  # 시스템 안내
+    # - principles_karpathy      # 외부 검증 자산 (선택)
+    # - <hard_rule_id>           # know-how 의 강제 규칙 artifact (manifest role: hard_rule)
+  context:                       # path 메타 카탈로그 — 본문은 lazy (도구로 읽기)
+    required: []                 # 작업 시작 전 반드시. 예: [{id: project_readme, src_path: README.md}]
+    triggered: []                # 작업 매칭 시 강제. 예: [{id: api_spec, src_path: docs/api-spec.md, when: "src/api/**"}]
+    suggested: []                # 자율 참고 (lazy)
   hooks:
     - {id: session_start, role: prefix_injection}
-    - {id: pre_tool_use, role: context_gating}
+    - {id: pre_tool_use, role: context_gating}   # 작업 시점 컨텍스트 강제 (cognition 도메인)
 
 state:
   hooks:
@@ -29,7 +30,6 @@ guard:
   hooks:
     - {id: pre_tool_use, role: required_check}
     - {id: pre_tool_use, role: cognitive_guard}
-    - {id: pre_tool_use, role: context_gating}
     - {id: pre_tool_use, role: path_blocklist}
     # loop_detection 은 state.workflows 에 ralph 등록 시 자동 활성 (compose 명시 불필요)
     - {id: permission_request, role: permission_gate}
