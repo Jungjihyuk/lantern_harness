@@ -75,7 +75,26 @@ find "$DEST/bin/cmd" -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
 find "$DEST/standard" -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
 
 echo ""
-echo "✓ 설치 완료."
+echo "✓ 파일 복사 완료."
+
+# dashboard Python deps — optional. SKIP_DASHBOARD_DEPS=1 로 건너뜀.
+if [[ "${SKIP_DASHBOARD_DEPS:-0}" != "1" ]]; then
+  if command -v python3 >/dev/null 2>&1 && python3 -m pip --version >/dev/null 2>&1; then
+    if ! python3 -c "import fastapi, uvicorn, pydantic" >/dev/null 2>&1; then
+      echo ""
+      echo "harness dashboard deps 설치 중 (fastapi / uvicorn / pydantic)…"
+      python3 -m pip install --user --quiet --disable-pip-version-check \
+        fastapi 'uvicorn[standard]' 'pydantic>=2' 2>&1 \
+        | grep -v "WARNING: The script" || true
+      echo "✓ dashboard deps 설치 완료."
+    fi
+  else
+    echo ""
+    echo "⚠ python3 / pip 미발견. dashboard 사용하려면 별도로:"
+    echo "    pip3 install --user fastapi 'uvicorn[standard]' 'pydantic>=2'"
+  fi
+fi
+
 echo ""
 echo "다음 단계:"
 echo "  1. PATH에 추가 (~/.zshrc 또는 ~/.bashrc):"
@@ -84,5 +103,6 @@ echo "  2. 새 셸 열거나 source ~/.zshrc"
 echo "  3. 프로젝트에서:"
 echo "       harness init"
 echo "       harness link claude"
+echo "       harness dashboard       # 시각 편집기 (n8n 스타일)"
 echo ""
 echo "처음 사용자는 docs/01-입문.md 부터 읽어보세요."
