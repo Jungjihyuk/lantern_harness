@@ -36,5 +36,20 @@ else
   std_input="$codex_input"
 fi
 
-# 표준 handler 호출. session_start 는 일반적으로 block 하지 않으므로 pass-through.
-exec "$HOME/.harness/standard/hooks/session_start/handler.sh" <<< "$std_input"
+# 표준 handler 실행 — runtime/AGENTS.resolved.md 생성됨
+"$HOME/.harness/standard/hooks/session_start/handler.sh" <<< "$std_input" || true
+
+# Codex 전용 — runtime/AGENTS.resolved.md 를 프로젝트 루트 AGENTS.md 로 symlink.
+# codex 가 AGENTS.md 를 native 로 읽으므로 이게 사실상의 prefix 주입.
+PROJECT_ROOT="$(echo "$codex_input" | jq -r '.cwd // empty' 2>/dev/null || echo "")"
+RESOLVED="$PROJECT_ROOT/.harness/runtime/AGENTS.resolved.md"
+TARGET="$PROJECT_ROOT/AGENTS.md"
+
+if [[ -n "$PROJECT_ROOT" && -f "$RESOLVED" ]]; then
+  # 기존 AGENTS.md 가 일반 파일이면 건드리지 않음 (사용자 자산 보호)
+  if [[ -L "$TARGET" || ! -e "$TARGET" ]]; then
+    ln -snf "$RESOLVED" "$TARGET" 2>/dev/null || true
+  fi
+fi
+
+exit 0
