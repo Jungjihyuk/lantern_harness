@@ -4,8 +4,12 @@
 set -euo pipefail
 
 VERSION="0.0.1"
-HARNESS_HOME="$HOME/.harness"
-CMD_DIR="$HARNESS_HOME/bin/cmd"
+HARNESS_HOME="${HARNESS_HOME:-$HOME/.harness}"
+if [[ -d "$HARNESS_HOME/bin/cmd" ]]; then
+  CMD_DIR="$HARNESS_HOME/bin/cmd"
+else
+  CMD_DIR="$(cd "$(dirname "$0")/cmd" && pwd)"
+fi
 
 usage() {
   cat <<USAGE
@@ -30,6 +34,7 @@ Commands:
 
   ctx <budget|...>       컨텍스트 inspection (cognition entry 별 토큰 등)
   scaffold <name>...     프로젝트 문서 빈 뼈대 생성
+  dashboard              n8n 스타일 web 시각 편집기 (localhost)
 
 Commands (개발 중 — 구현 정리 중):
   publish <path>         know-how → standard 승격
@@ -52,7 +57,7 @@ shift
 
 case "$cmd" in
   -h|--help|help) usage; exit 0 ;;
-  init|link|unlink|list|show|disable|enable|validate|ctx|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version)
+  init|link|unlink|list|show|disable|enable|validate|ctx|publish|scaffold|viz|eval|improve|judge|ralph|reload|doctor|version|dashboard)
     script="$CMD_DIR/$cmd.sh"
     if [[ -x "$script" ]]; then
       exec "$script" "$@"
