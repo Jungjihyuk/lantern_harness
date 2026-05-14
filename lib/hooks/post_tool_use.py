@@ -2,9 +2,9 @@
 
 핵심 role:
   - status_track: Read 호출이면 required-status.json 의 status 갱신 (unread → read)
+  - edit_track:   변경 도구 (Edit/Write/...) 면 edit_history 에 path append
+                  (cognitive_guard 의 per_session 누적 / loop_detection 의 입력)
   - trace_log:    이벤트 기록
-
-(metric_collect 는 정밀 측정 미구현 — 미래에 trace 데이터로 후처리)
 
 stdout: {"decision": "allow"}
 """
@@ -23,6 +23,35 @@ from lib.hooks._common import (
 )
 
 HOOK_ID = "post_tool_use"
+
+MUTATING_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit"}
+MAX_HISTORY = 50
+
+
+def track_edit(project_root: Path, session_id: str, tool_name: str, tool_args: dict) -> None:
+    """cognitive-guard.json 의 edit_history 에 path append (변경 도구만)."""
+    if tool_name not in MUTATING_TOOLS:
+        return
+    file_path = tool_args.get("file_path") or tool_args.get("notebook_path") or tool_args.get("path")
+    if not file_path:
+        return
+    guard_file = project_root / ".harness" / "runtime" / "sessions" / session_id / "cognitive-guard.json"
+    guard = {"changed_files": [], "diff_lines_total": 0, "new_files_total": 0, "edit_history": [], "bypass_used": False}
+    if guard_file.exists():
+        try:
+            guard.update(json.loads(guard_file.read_text(encoding="utf-8")))
+        except Exception:
+            pass
+    history = guard.get("edit_history", []) or []
+    history.append(file_path)
+    guard["edit_history"] = history[-MAX_HISTORY:]
+    if file_path not in (guard.get("changed_files") or []):
+        guard.setdefault("changed_files", []).append(file_path)
+    try:
+        guard_file.parent.mkdir(parents=True, exist_ok=True)
+        guard_file.write_text(json.dumps(guard, indent=2, ensure_ascii=False))
+    except Exception:
+        pass
 
 
 def track_read_status(project_root: Path, session_id: str, tool_name: str, tool_args: dict) -> None:
@@ -68,6 +97,12 @@ def main() -> int:
     if "status_track" in roles:
         try:
             track_read_status(project_root, session_id, tool_name, tool_args)
+        except Exception:
+            pass
+
+    if "edit_track" in roles:
+        try:
+            track_edit(project_root, session_id, tool_name, tool_args)
         except Exception:
             pass
 

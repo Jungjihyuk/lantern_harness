@@ -18,6 +18,7 @@ cognition:
 state:
   - status_init           # 세션 시작 시 상태 파일 초기화
   - status_track          # Read 도구 호출 추적 → status JSON 갱신
+  - edit_track            # 변경 도구 호출 후 edit_history 갱신 (loop_detection / cognitive_guard 누적의 입력)
   - workflow_step         # 워크플로우 단계 실행 (ralph 등)
   - memory_persist        # 영구 메모리 갱신
 

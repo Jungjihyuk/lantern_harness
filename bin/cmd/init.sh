@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-HARNESS_HOME="$HOME/.harness"
+HARNESS_HOME="${HARNESS_HOME:-$HOME/.harness}"
 PROJECT_ROOT="$(pwd)"
 HARNESS_DIR="$PROJECT_ROOT/.harness"
 

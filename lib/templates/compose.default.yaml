@@ -21,6 +21,7 @@ state:
   hooks:
     - {id: session_start, role: status_init}
     - {id: post_tool_use, role: status_track}
+    - {id: post_tool_use, role: edit_track}        # loop_detection / cognitive_guard 누적 입력
 
 action:
   adapters:

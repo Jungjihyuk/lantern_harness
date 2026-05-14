@@ -15,6 +15,7 @@ setup:
     guard:
       policies:
         cognitive_guard:
+          on_breach: self_correct
           per_call:
             max_diff_lines: 5
 input:
@@ -39,4 +40,4 @@ input:
       line'
 expect:
   decision: self_correct
-  reason_contains: 큰 변경 감지
+  reason_contains: per_call.max_diff_lines

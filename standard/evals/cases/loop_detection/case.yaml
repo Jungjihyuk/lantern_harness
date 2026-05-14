@@ -28,6 +28,9 @@ setup:
     cognition:
       context:
         required: []
+    state:
+      workflows:
+        - id: ralph
     guard:
       policies:
         loop_detection:
@@ -43,4 +46,4 @@ input:
     new_string: b
 expect:
   decision: self_correct
-  reason_contains: Doom loop 감지
+  reason_contains: loop_detection
